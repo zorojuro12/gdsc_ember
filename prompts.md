@@ -128,7 +128,7 @@ and tell me what files change in what order. Then implement."
 
 ### After completing any task
 ```
-git add -A && git commit -m "feat: [one sentence, max 72 chars]"
+git add -A && git commit -m "feat: [one sentence, max 120 chars]"
 ```
 
 ### End of day
