@@ -92,6 +92,39 @@ export default function Map() {
           Math.max(...lats),
         ]
 
+        // --- Fire spread projection placeholders ---
+        // Layer order: 6hr (bottom) → 4hr → 2hr → everything else on top.
+        // Will be replaced with real Shapely-computed GeoJSON in Phase 3.
+
+        const spreadRings: Array<{ id: string; bufferKm: number; opacity: number }> = [
+          { id: 'spread-6hr', bufferKm: 9, opacity: 0.06 },
+          { id: 'spread-4hr', bufferKm: 6, opacity: 0.10 },
+          { id: 'spread-2hr', bufferKm: 3, opacity: 0.15 },
+        ]
+
+        for (const ring of spreadRings) {
+          map.addSource(ring.id, {
+            type: 'geojson',
+            data: bboxPolygon(...bbox, ring.bufferKm),
+          })
+          map.addLayer({
+            id: `${ring.id}-fill`,
+            type: 'fill',
+            source: ring.id,
+            paint: { 'fill-color': '#D85A30', 'fill-opacity': ring.opacity },
+          })
+          map.addLayer({
+            id: `${ring.id}-line`,
+            type: 'line',
+            source: ring.id,
+            paint: {
+              'line-color': '#D85A30',
+              'line-width': 1,
+              'line-dasharray': [3, 2],
+            },
+          })
+        }
+
         // Evacuation Alert zone (5km buffer) — rendered first, underneath Order zone
         map.addSource('evac-alert', {
           type: 'geojson',
