@@ -1,20 +1,20 @@
 # EMBER session log
 
-## Last session: Day 8 — Road closure lines on map
+## Last session: Day 9 — Shelter pins on map
 
 ### What was done
-- Copied `road_closures.json` to `frontend/public/` for static serving
-- Updated `Map.tsx`: fetches perimeter + road_closures concurrently with `Promise.all`
-- Builds a GeoJSON FeatureCollection of LineString features from `coordinates_from`/`coordinates_to`; swaps `{ lat, lng }` → `[lng, lat]` for Mapbox
-- Source `road-closures`, two layers: `road-closures-line` and `road-closures-labels`
-- Line layer: data-driven color (CLOSED=#E24B4A 4px, ADVISORY=#EF9F27 3px), fixed `line-dasharray: [4, 2]` (dasharray doesn't support data-driven expressions in Mapbox GL)
-- Labels layer: `symbol-placement: 'line'`, `text-field: road_name`, color matches status, white halo for legibility
+- Copied `shelters.json` to `frontend/public/` for static serving
+- Added `shelters.json` to the existing `Promise.all` fetch (now fetches perimeter, closures, and shelters in parallel)
+- Added `Shelter` type, built Point FeatureCollection with `status: 'Open'` defaulted on each feature
+- Source `shelters`, two layers: `shelter-pins` (circle) and `shelter-labels` (symbol)
+- Circle layer: radius 12, data-driven color (Open=#639922, Filling=#EF9F27, Near Full=#E24B4A default), white 2px stroke
+- Labels: `text-offset: [0, 1.8]`, `text-anchor: top` places name below the pin; white halo for legibility
 - TypeScript check passes clean
-- Committed: `feat: add road closure lines to map`
+- Committed: `feat: add shelter pins with status colors to map`
 
 ### Decisions made
-- Single source + single line layer with data-driven expressions — cleaner than two separate layers
-- `line-dasharray` is fixed (not per-feature) — Mapbox GL limitation; both CLOSED and ADVISORY get `[4, 2]`
+- `status: 'Open'` hardcoded in feature properties for now — color expression is fully wired so Phase 5 dynamic status just needs to update the GeoJSON source data
+- All three static files now fetched in one `Promise.all` — no sequential waterfall
 
 ### Next session
-- Phase 2 continued: shelter pins layer from `shelters.json`
+- Phase 2 continued: fire spread projection rings, wind vector arrows, map legend component
