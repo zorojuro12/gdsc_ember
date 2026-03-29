@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+shapely
+pandas
+anthropic
+httpx
+python-dotenv

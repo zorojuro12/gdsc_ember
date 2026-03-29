@@ -18,9 +18,9 @@ Labels:
 - [x] 🟢 Initialize React + TypeScript + Vite frontend in `/frontend` — `npm create vite@latest . -- --template react-ts`
 - [x] 🟢 Install frontend deps: `tailwindcss`, `mapbox-gl`, `@tanstack/react-query`, `react-router-dom`
 - [x] 🟢 Configure Tailwind CSS — `tailwind.config.js`, `postcss.config.js`, base styles in `index.css`
-- [ ] 🟢 Initialize FastAPI backend in `/backend` — create `main.py`, `requirements.txt`
-- [ ] 🟢 Backend `requirements.txt`: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
-- [ ] 🟢 Create `backend/cache.py` — in-memory dict cache with TTL (see CLAUDE.md reference implementation)
+- [x] 🟢 Initialize FastAPI backend in `/backend` — create `main.py`, `requirements.txt`
+- [x] 🟢 Backend `requirements.txt`: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
+- [x] 🟢 Create `backend/cache.py` — in-memory dict cache with TTL (see CLAUDE.md reference implementation)
 - [ ] 🟡 Wire Demo Mode toggle — `DEMO_MODE` env var read in backend `main.py`, exposed via `GET /api/config` endpoint, frontend reads it on startup. Think through: how does the frontend know demo mode is on? How does the backend conditionally load static data vs call live APIs?
 - [ ] 🟢 Base Mapbox GL JS map component in `frontend/src/components/Map.tsx` — renders empty map centered on West Kelowna (49.86, -119.58) with token from env var
 - [ ] 🟢 Load and render `mcdougall_creek_perimeter.geojson` on the map as a red polygon fill with dark red outline
