@@ -1,6 +1,28 @@
 # EMBER session log
 
-## Last session: Day 3 — Phase 1 backend scaffold
+## Last session: Day 4 — Demo Mode toggle wiring
+
+### What was done
+- Backend (`main.py`) already had `DEMO_MODE` from dotenv and `GET /api/config` — no changes needed
+- Created `frontend/src/contexts/AppConfigContext.tsx` — `AppConfigProvider` fetches `/api/config` on mount, stores `{ demoMode: boolean }` in React context, logs to console. Falls back to `demoMode: true` on fetch error (keeps app usable offline)
+- Updated `frontend/src/main.tsx` — wraps app with `QueryClientProvider` (React Query setup) and `AppConfigProvider`
+- Created `frontend/.env.example` with `VITE_API_URL` and `VITE_MAPBOX_TOKEN` stubs
+- TypeScript check passes clean
+- Committed: `feat: wire Demo Mode toggle with /api/config endpoint`
+- Checked off plan.md Phase 1 Demo Mode toggle item
+
+### Decisions made
+- Backend CORS already uses `allow_origins=["*"]` — covers `localhost:5173`, no change needed
+- `VITE_API_URL` env var with fallback to `http://localhost:8000` — overridable at Vercel deploy time
+- `QueryClientProvider` set up now at `main.tsx` level so all future `useQuery` hooks work without additional setup
+- Error fallback defaults to `demoMode: true` — safe offline behavior
+
+### Next session
+- Phase 1 continued: base Mapbox GL JS map component (`frontend/src/components/Map.tsx`)
+
+---
+
+## Session: Day 3 — Phase 1 backend scaffold
 
 ### What was done
 - Created `backend/requirements.txt` with all deps: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
