@@ -1,241 +1,190 @@
-## Claude Code Prompts
+# EMBER — Daily Workflow & Prompts
 
-### Session Start (run at the beginning of EVERY Claude Code session)
+Solo developer reference. Keep on desktop, don't commit to repo.
 
+---
+
+## Your Daily Workflow
+
+1. Open project in Cursor
+2. Check plan.md — find the next unchecked item
+3. Build it using Cursor Agent (Ctrl+I)
+4. Test it works (especially Demo Mode)
+5. Commit: `git add -A && git commit -m "feat: [what you built]"`
+6. Repeat steps 2-5 until done for the day
+7. End of day: update session-log.md and plan.md (check off completed items)
+8. Push: `git push origin dev`
+
+That's it. No extra planning docs needed for most tasks.
+
+---
+
+## When to Use Which Tool
+
+| Situation | Tool | Why |
+|---|---|---|
+| Build a component or endpoint | Cursor Agent (Ctrl+I) | Fast, uses Cursor subscription not Claude tokens |
+| Quick question while coding | Cursor Chat (Cmd+L) | Free, instant |
+| Complex multi-file wiring (agents, orchestrator) | Claude Code + Sonnet | Better at coordinating across many files |
+| Stuck on architecture decision | Claude Code + Opus (plan mode) | Use sparingly — max 2-3 times total |
+| Claude is rate-limited | Gemini in VS Code | Good backup for review and debugging |
+| Generate test files | Codex | Save Claude tokens, Codex is fine for tests |
+
+---
+
+## Cursor Agent Prompts (Ctrl+I) — Your Main Tool
+
+### Simple Task (most plan.md items)
 ```
-Read these files carefully before doing anything:
-1. CLAUDE.md — project rules and conventions
-2. plan.md — current build phase and checklist
-3. session-log.md — what was done last session and what to do next
-
-Tell me: what phase are we in, what was done last session, and what's the next task?
-```
-
-### Session End (run at the end of EVERY Claude Code session)
-
-```
-Update these three files:
-1. plan.md — check off any items we completed today
-2. session-log.md — overwrite with: what was built today, decisions made, any blockers, and the exact next task for the next session
-3. CLAUDE.md — if we learned any new rules or patterns, add them to the appropriate section
-
-Then commit all changes with a conventional commit message and push to the current branch.
-```
-
-### Phase Planning (Opus, plan mode — Shift+Tab x2)
-
-```
-Read CLAUDE.md and plan.md. We are starting Phase [N].
-Generate a detailed implementation plan for this phase:
-- Exact file paths for every file to create or modify
-- What changes in each file and why
-- The order of implementation (what must exist before what)
-- What tests or manual checks confirm it works
-- How Demo Mode is handled (all data paths must work from static JSON)
-Save to phase-[N]-plan.md. Do not write any code yet.
-```
-
-### Feature Planning (Opus, plan mode)
-
-```
-Read CLAUDE.md, plan.md, session-log.md.
-Before writing any code for [FEATURE], deeply research the existing codebase.
-Read every relevant file in full — not just signatures, but implementations.
-Write a detailed implementation plan:
-- Exact file paths to create or modify
-- What changes in each file and why
-- Order of implementation
-- How it works in Demo Mode
-- What manual test confirms it works
-Save to feature-plan-[name].md. Do not write any code yet.
+[Describe what to build]. Follow the conventions in CLAUDE.md.
 ```
 
-### Execute Plan (Sonnet)
+That's usually enough. Cursor already has your CLAUDE.md loaded via the rules.
+Examples:
 
 ```
-The plan looks good. Execute [plan-file].md exactly as written.
-Work through the files in the order specified.
-After completing each file, pause and confirm what was done.
-When all files are done, tell me what manual test to run to verify.
+Create frontend/src/components/MapLegend.tsx — a legend showing color keys
+for fire perimeter (red), projection (orange), road closures (red lines),
+shelters (green/amber/red dots). Use Tailwind CSS.
 ```
 
-### Fix After Review
+```
+Add a GET /api/config endpoint to backend/main.py that returns
+{"demo_mode": true/false} based on the DEMO_MODE env var.
+```
 
 ```
-I've added notes to the plan marked ## YOUR NOTE: — read them and
-update the plan accordingly. Don't start coding yet.
+Add road closure lines to the Map component. Read coordinates from
+road_closures.json in the scenario folder. Render as thick red dashed
+lines on Mapbox. Follow existing layer patterns in Map.tsx.
+```
+
+### When Something Isn't Working
+```
+[Component/endpoint] is broken.
+Expected: [what should happen]
+Actual: [what's happening]
+Read the relevant files first. Find the cause before suggesting a fix.
 ```
 
 ---
 
-## Cursor Agent Mode Prompts (Ctrl+I)
+## Claude Code Prompts — Use Sparingly
 
-### Create a React Component
-
+### Session Start (beginning of any Claude Code session)
 ```
-Create [ComponentName].tsx in frontend/src/components/.
-It should [describe what it does].
-Use Tailwind CSS for styling. TypeScript strict mode.
-Follow the patterns in CLAUDE.md for API contracts.
-Props should match the /api/briefing response shape.
+Read CLAUDE.md, plan.md, and session-log.md.
+What phase are we in, what was done last, and what's next?
 ```
 
-### Create a FastAPI Endpoint
-
+### Session End (end of any Claude Code session)
 ```
-Add a new endpoint to backend/main.py:
-[METHOD] [PATH]
-Request body: [shape]
-Response: [shape from CLAUDE.md]
-In Demo Mode, return data from the scenario files.
-In live mode, call [which agent/API].
+Update session-log.md with: what was built, decisions made, blockers,
+and the exact next task. Check off completed items in plan.md.
+Commit everything with a conventional commit message.
 ```
 
-### Create an Agent
-
+### Complex Multi-File Task (only for agent wiring, orchestrator, etc.)
 ```
-Create backend/agents/[name].py following CLAUDE.md agent spec.
-Input: [describe inputs]
-Output: [describe output shape]
-Must work in Demo Mode (load from /data/scenarios/2023-west-kelowna/).
-Must have a 3-second timeout when called via asyncio.gather.
+Read CLAUDE.md. I need to [describe the complex task].
+This touches these files: [list files].
+Research the existing code first, then implement.
+Make sure it works in Demo Mode (all data from static JSON).
 ```
 
-### Add a Mapbox Layer
-
+### Architecture Decision (Opus plan mode — use 2-3 times TOTAL)
 ```
-Add a new Mapbox layer to the Map component.
-Layer type: [fill/line/circle/symbol]
-Data source: [file path to GeoJSON or JSON]
-Style: [color, opacity, width, etc.]
-The layer should update when Demo Mode simulation advances time.
-Reference existing layers in Map.tsx for the pattern.
-```
-
-### Debug Something
-
-```
-[Component/endpoint] is not working correctly.
-Expected behavior: [what should happen]
-Actual behavior: [what's happening]
-Read the relevant files first. Do not guess — identify the specific
-cause before proposing a fix.
+Read CLAUDE.md and plan.md. I'm about to build [complex feature].
+Before I start, think through: what files need to change, in what order,
+and what could go wrong. Write a short plan — 10 lines max, not a document.
 ```
 
 ---
 
-## Cursor Chat Prompts (Cmd+L) — Quick Questions
+## Tasks That Need Planning vs Tasks That Don't
 
-### Architecture Question
-```
-Looking at CLAUDE.md, how should I structure [X]?
-Which files need to change and in what order?
-```
+### Just do it (Cursor Agent, no planning needed)
+- Any single-file component (BriefingCard, MapLegend, TopBar, etc.)
+- Any single endpoint (GET /api/config, POST /api/admin/shelter)
+- Config files (.gitignore, .env.example, tailwind.config.js)
+- Adding a Mapbox layer (each layer is self-contained)
+- CSS/layout adjustments
+- Bug fixes
+- Moving/organizing files
 
-### API Contract Check
-```
-I'm building [component/endpoint]. What's the exact JSON shape
-it should send/receive? Check CLAUDE.md API endpoints section.
-```
+### Think first, then do (Claude Code or Cursor with careful prompting)
+- Wiring 4 agents together with asyncio.gather + timeout
+- The full /api/briefing endpoint (chains all agents + LLM call)
+- Admin simulation controls (advance time changes state across system)
+- Fire spread model (Shapely buffer with wind direction offset)
 
-### Tailwind Help
-```
-I need a [describe UI element] using Tailwind CSS.
-Colors: red for danger (#E24B4A), amber for warning (#EF9F27),
-green for safe (#639922), blue for info (#185FA5).
-```
-
----
-
-## Gemini Prompts (backup when Claude is rate-limited)
-
-### Codebase Review
-```
-Read all files in this project. I'm building EMBER, a wildfire
-evacuation app. Check if all components follow the conventions
-in CLAUDE.md. Flag any inconsistencies — especially:
-- Frontend calling external APIs directly (should go through FastAPI)
-- Missing Demo Mode handling in any agent or endpoint
-- Shelter data being fetched instead of read from shelters.json
-- Any hardcoded API keys
-```
-
-### Generate Tests
-```
-Read [file path]. Generate a test file for it.
-For React components: use React Testing Library.
-For FastAPI endpoints: use pytest with httpx AsyncClient.
-For agents: test both Demo Mode (static data) and the response shape.
-```
+For the "think first" tasks, you don't need a separate planning document.
+Just tell Claude Code or Cursor: "Before coding, think through the approach
+and tell me what files change in what order. Then implement."
 
 ---
 
-## Codex Prompts (use $100 credits for test generation)
+## Git Commands
 
-### Generate Component Tests
+### After completing any task
 ```
-Here is a React component: [paste component code]
-Generate a comprehensive test file using React Testing Library and vitest.
-Test: rendering, user interactions, loading states, error states.
-The component receives data matching this shape: [paste API response from CLAUDE.md]
+git add -A && git commit -m "feat: [one sentence, max 72 chars]"
 ```
 
-### Generate API Tests
+### End of day
 ```
-Here is a FastAPI endpoint: [paste endpoint code]
-Generate pytest tests using httpx AsyncClient.
-Test: success response matches this shape: [paste from CLAUDE.md],
-error handling, Demo Mode returns static data.
+git push origin dev
 ```
 
----
-
-## Git Prompts (for Claude Code)
-
-### Commit Current Work
+### Phase complete (Demo Mode tested)
 ```
-Commit all changes with a conventional commit message describing what was built.
-Format: feat: [short description] or fix: [short description]
-```
-
-### Create Feature Branch
-```
-Create a new branch: feat/ember-[feature-name]
-Switch to it.
-```
-
-### Merge to Dev
-```
-First, test that Demo Mode works (all data loads from static JSON, no API errors).
-If it works, merge the current feature branch to dev.
-Push both branches to origin.
-```
-
----
-
-## Emergency / Recovery
-
-### Claude Code Made a Mess — Rewind
-Press Esc to stop Claude immediately.
-Then press Esc + Esc to open checkpoint picker.
-Or in terminal:
-```
+git checkout main
+git merge dev
+git push origin main
 git checkout dev
-git branch -D feat/ember-[broken-branch]
-git checkout -b feat/ember-[feature-name]-v2
 ```
 
-### Rate Limited — Switch Tools
-1. Close Claude Code
-2. Open Cursor — use Agent mode (Ctrl+I) with Sonnet for execution
-3. Or use Gemini in VS Code for review/debugging
-4. Come back to Claude Code when limit resets
-
-### Demo Mode Broken
+### Something went wrong
 ```
-Demo Mode is failing — it's making a live API call instead of loading
-from static JSON. The rule from CLAUDE.md: all data must be served from
-/data/scenarios/2023-west-kelowna/ with zero external API calls.
-Trace the code path from the Demo Mode toggle through to the data fetch.
-Find where the conditional check is missing or incorrect.
+git stash
+git log --oneline -5
+git checkout [last good commit hash]
+```
+
+---
+
+## Demo Mode Testing (do this often)
+
+Before any merge to main, and at least once per day:
+
+1. Set DEMO_MODE=true in .env (should already be default)
+2. Start backend: `cd backend && uvicorn main:app --reload`
+3. Start frontend: `cd frontend && npm run dev`
+4. Open browser — map should show McDougall Creek fire perimeter
+5. Enter address — briefing should return from cached data
+6. No network errors in browser console
+7. No external API calls in backend logs
+
+If any step fails, fix it before doing anything else.
+
+---
+
+## Commit Message Examples
+
+```
+feat: add base Mapbox map centered on West Kelowna
+feat: render fire perimeter polygon from GeoJSON
+feat: add shelter pins with status colors
+feat: implement cache module with TTL
+feat: add Threat Agent with time-to-perimeter calc
+feat: add GET /api/briefing endpoint
+feat: add briefing card component
+feat: add profile flag toggles with localStorage
+feat: add admin shelter override buttons
+fix: shelter ranking not applying pet deprioritization
+fix: Demo Mode making live API call for directions
+fix: map legend overlapping briefing card on mobile
+chore: move scenario data to /data/scenarios/
+docs: update session-log after Phase 2
+style: adjust briefing card padding and font sizes
 ```
