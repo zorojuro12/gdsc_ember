@@ -1,6 +1,24 @@
 # EMBER session log
 
-## Last session: Day 5 — Mapbox map with fire perimeter
+## Last session: Day 6 — API URL configuration for dev and production
+
+### What was done
+- Extracted `API_BASE` from `AppConfigContext.tsx` into `frontend/src/lib/api.ts` — single source of truth for the backend URL, importable by any component
+- Updated `AppConfigContext.tsx` to import `API_BASE` from `lib/api.ts`
+- Created `frontend/.env` locally with `VITE_API_URL=http://localhost:8000` (gitignored)
+- TypeScript check passes clean
+- Committed: `chore: configure API URL for dev and production`
+
+### Decisions made
+- `API_BASE` lives in `lib/api.ts` so all future agent/component API calls import from one place — no duplication
+- Production URL (`VITE_API_URL` = Railway URL) set in Vercel dashboard env vars, not in the repo
+
+### Next session
+- Phase 2: evacuation zone overlays, road closure layer, shelter pins, fire spread projection rings
+
+---
+
+## Session: Day 5 — Mapbox map with fire perimeter
 
 ### What was done
 - Created `frontend/src/components/Map.tsx` — Mapbox GL JS map, full-width `h-[65vh]`, centered West Kelowna (-119.58, 49.86), zoom 11, streets-v12 style
