@@ -1,0 +1,100 @@
+{
+  "metadata": {
+    "description": "EMBER shelter database for 2023 McDougall Creek fire demo scenario",
+    "sources": [
+      "EmergencyInfoBC Aug 17, 2023 alert",
+      "Central Okanagan Emergency Operations updates",
+      "CBC BC reporting Aug 17-19, 2023",
+      "Google Maps accessibility verification (March 2026)",
+      "Venue websites for capacity estimates"
+    ],
+    "notes": "Capacity estimates are based on EMBC guideline of ~40 sq ft per person for shelter floor use, not venue seating capacity. These are conservative overnight shelter estimates, not processing throughput."
+  },
+  "shelters": [
+    {
+      "id": "shelter_001",
+      "name": "Royal LePage Place",
+      "address": "2760 Cameron Road, West Kelowna, BC V1Z 2T6",
+      "lat": 49.8587,
+      "lng": -119.5827,
+      "capacity_estimate": 600,
+      "is_accessible": true,
+      "has_pet_area": true,
+      "has_medical_power": true,
+      "facility_type": "arena",
+      "is_lodging_only": false,
+      "role": "reception_centre",
+      "notes": "Primary reception centre for evacuees south of Traders Cove. Arena seating capacity 2,600 but shelter floor capacity much lower. Processed thousands of registrations during the event.",
+      "opened_at": "2023-08-17T14:00:00-07:00",
+      "hours": "9:00 AM - 8:00 PM daily during event"
+    },
+    {
+      "id": "shelter_002",
+      "name": "Kal Tire Place",
+      "address": "3445 43 Avenue, Vernon, BC V1T 8X1",
+      "lat": 50.2671,
+      "lng": -119.2688,
+      "capacity_estimate": 600,
+      "is_accessible": true,
+      "has_pet_area": false,
+      "has_medical_power": true,
+      "facility_type": "arena",
+      "is_lodging_only": false,
+      "role": "reception_centre",
+      "notes": "Reception centre for evacuees north of Traders Cove along Westside Road. Approximately 2,500 evacuees were processed through this facility. Located ~60km north of West Kelowna.",
+      "opened_at": "2023-08-17T20:00:00-07:00",
+      "hours": "9:00 AM - 8:00 PM daily during event"
+    },
+    {
+      "id": "shelter_003",
+      "name": "Princess Margaret Secondary School",
+      "address": "120 Green Avenue West, Penticton, BC V2A 3T1",
+      "lat": 49.4928,
+      "lng": -119.5933,
+      "capacity_estimate": 250,
+      "is_accessible": true,
+      "has_pet_area": false,
+      "has_medical_power": false,
+      "facility_type": "school",
+      "is_lodging_only": false,
+      "role": "reception_centre",
+      "notes": "Reception centre south of the fire zone in Penticton. Approximately 350 people received assistance by Aug 20. School gymnasium facility.",
+      "opened_at": "2023-08-18T09:00:00-07:00",
+      "hours": "9:00 AM - 8:00 PM daily during event"
+    },
+    {
+      "id": "shelter_004",
+      "name": "The Salvation Army Kelowna",
+      "address": "1480 Sutherland Drive, Kelowna, BC V1Y 5Y5",
+      "lat": 49.8842,
+      "lng": -119.4835,
+      "capacity_estimate": 300,
+      "is_accessible": true,
+      "has_pet_area": false,
+      "has_medical_power": false,
+      "facility_type": "community_building",
+      "is_lodging_only": false,
+      "role": "reception_centre",
+      "notes": "Additional reception centre opened at 11 PM on Aug 17 after fire jumped Okanagan Lake and threatened Kelowna side. Located in downtown Kelowna.",
+      "opened_at": "2023-08-17T23:00:00-07:00",
+      "hours": "Variable during event"
+    },
+    {
+      "id": "shelter_005",
+      "name": "Prospera Place",
+      "address": "1223 Water Street, Kelowna, BC V1Y 9V1",
+      "lat": 49.8891,
+      "lng": -119.4963,
+      "capacity_estimate": 500,
+      "is_accessible": true,
+      "has_pet_area": true,
+      "has_medical_power": true,
+      "facility_type": "arena",
+      "is_lodging_only": true,
+      "role": "group_lodging",
+      "notes": "Used for group lodging and reprieve from smoke — NOT a registration/reception centre. 134 people slept there on one peak night with capacity for more. Prioritized for evacuees.",
+      "opened_at": "2023-08-18T12:00:00-07:00",
+      "hours": "24 hours during event"
+    }
+  ]
+}

@@ -43,6 +43,7 @@ type RoadClosure = {
   coordinates_from: Coord
   coordinates_to: Coord
 }
+type Shelter = { name: string; lat: number; lng: number }
 
 export default function Map() {
   const containerRef = useRef<HTMLDivElement>(null)
@@ -62,15 +63,19 @@ export default function Map() {
 
     map.on('load', () => {
       void (async () => {
-        const [perimeterRes, closuresRes] = await Promise.all([
+        const [perimeterRes, closuresRes, sheltersRes] = await Promise.all([
           fetch('/mcdougall_creek_perimeter.geojson'),
           fetch('/road_closures.json'),
+          fetch('/shelters.json'),
         ])
         const perimeter = (await perimeterRes.json()) as {
           features: Array<{ geometry: { coordinates: number[][][] } }>
         }
         const closuresData = (await closuresRes.json()) as {
           road_closures: RoadClosure[]
+        }
+        const sheltersData = (await sheltersRes.json()) as {
+          shelters: Shelter[]
         }
 
         // --- Evacuation zone placeholders ---
@@ -199,6 +204,59 @@ export default function Map() {
               'CLOSED', '#E24B4A',
               '#EF9F27',
             ],
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1.5,
+          },
+        })
+        // --- Shelter pins ---
+
+        // Status defaulted to 'Open' until dynamic status is wired in Phase 5.
+        const shelterFeatures = sheltersData.shelters.map((s) => ({
+          type: 'Feature' as const,
+          geometry: {
+            type: 'Point' as const,
+            coordinates: [s.lng, s.lat],
+          },
+          properties: { name: s.name, status: 'Open' },
+        }))
+
+        map.addSource('shelters', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: shelterFeatures },
+        })
+
+        // Circle pins: Open=green, Filling=amber, Near Full=red; white border
+        map.addLayer({
+          id: 'shelter-pins',
+          type: 'circle',
+          source: 'shelters',
+          paint: {
+            'circle-radius': 12,
+            'circle-color': [
+              'match',
+              ['get', 'status'],
+              'Open', '#639922',
+              'Filling', '#EF9F27',
+              '#E24B4A', // Near Full (default)
+            ],
+            'circle-stroke-width': 2,
+            'circle-stroke-color': '#ffffff',
+          },
+        })
+
+        map.addLayer({
+          id: 'shelter-labels',
+          type: 'symbol',
+          source: 'shelters',
+          layout: {
+            'text-field': ['get', 'name'],
+            'text-size': 11,
+            'text-offset': [0, 1.8],
+            'text-anchor': 'top',
+            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          },
+          paint: {
+            'text-color': '#1a1a1a',
             'text-halo-color': '#ffffff',
             'text-halo-width': 1.5,
           },
