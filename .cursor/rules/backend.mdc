@@ -1,0 +1,15 @@
+---
+description: Backend conventions for FastAPI
+globs: backend/**/*
+alwaysApply: false
+---
+
+- Python 3.11+ with type hints on all functions
+- FastAPI with async endpoints throughout
+- Agents in backend/agents/ — one file per agent (threat.py, route.py, shelter.py, profile.py)
+- Cache module in backend/cache.py — in-memory dict with TTL, no Redis
+- In Demo Mode (DEMO_MODE=true): load all data from /data/scenarios/2023-west-kelowna/
+- Never call external APIs in Demo Mode — all data from static files
+- Anthropic API called ONLY in profile.py — nowhere else
+- Google Maps API called ONLY in route.py — nowhere else
+- All endpoints return JSON matching the contracts in CLAUDE.md

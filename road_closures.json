@@ -1,0 +1,108 @@
+{
+  "metadata": {
+    "description": "EMBER road closure timeline for 2023 McDougall Creek fire demo scenario",
+    "fire_id": "K52767",
+    "fire_name": "McDougall Creek",
+    "sources": [
+      "Castanet.net live updates Aug 17-18, 2023",
+      "Central Okanagan Emergency Operations updates",
+      "DriveBC advisories referenced in CORD updates",
+      "CBC BC reporting",
+      "Vancouver Is Awesome Aug 18 report"
+    ],
+    "notes": "Road closures reconstructed from news reports. Exact timestamps are approximate — based on the nearest update timestamp from emergency operations or news coverage. Coordinates are approximate midpoints of affected segments."
+  },
+  "road_closures": [
+    {
+      "id": "closure_001",
+      "road_name": "Westside Road",
+      "segment_from": "Bear Creek FSR junction",
+      "segment_to": "Nahun (north)",
+      "direction": "BOTH",
+      "status": "CLOSED",
+      "severity": "MAJOR",
+      "cause": "Wildfire — McDougall Creek fire burning across road corridor",
+      "coordinates_from": { "lat": 49.930, "lng": -119.510 },
+      "coordinates_to": { "lat": 50.120, "lng": -119.475 },
+      "midpoint": { "lat": 50.025, "lng": -119.493 },
+      "closed_at": "2023-08-17T19:00:00-07:00",
+      "reopened_at": null,
+      "demo_notes": "Critical closure — cuts off the main northbound evacuation route along the west side of Okanagan Lake. Forces evacuees north of Traders Cove to reroute via Vernon. This is the closure that triggers the re-route demo moment."
+    },
+    {
+      "id": "closure_002",
+      "road_name": "Highway 97 (travel advisory)",
+      "segment_from": "Glenrosa Road",
+      "segment_to": "William R. Bennett Bridge",
+      "direction": "BOTH",
+      "status": "ADVISORY",
+      "severity": "MODERATE",
+      "cause": "Wildfire proximity — prepare for short-notice closure due to McDougall Creek fire",
+      "coordinates_from": { "lat": 49.852, "lng": -119.617 },
+      "coordinates_to": { "lat": 49.886, "lng": -119.505 },
+      "midpoint": { "lat": 49.869, "lng": -119.561 },
+      "closed_at": "2023-08-17T20:00:00-07:00",
+      "reopened_at": null,
+      "demo_notes": "Travel advisory — highway remained open but drivers warned of potential sudden closure. This is the route EMBER would recommend for southbound evacuees heading to Royal LePage Place. Important for showing that the system accounts for advisory-level events, not just full closures."
+    },
+    {
+      "id": "closure_003",
+      "road_name": "Rose Valley access roads",
+      "segment_from": "Rose Valley Road at Hwy 97",
+      "segment_to": "West Kelowna Estates",
+      "direction": "BOTH",
+      "status": "CLOSED",
+      "severity": "MAJOR",
+      "cause": "Evacuation zone — all access blocked by fire activity",
+      "coordinates_from": { "lat": 49.870, "lng": -119.580 },
+      "coordinates_to": { "lat": 49.885, "lng": -119.570 },
+      "midpoint": { "lat": 49.878, "lng": -119.575 },
+      "closed_at": "2023-08-17T21:00:00-07:00",
+      "reopened_at": null,
+      "demo_notes": "Residential area closures. Rose Valley and West Kelowna Estates were under evacuation order — roads closed to incoming traffic. Not a highway but relevant for showing that the system understands you cannot route INTO an evacuation zone."
+    },
+    {
+      "id": "closure_004",
+      "road_name": "Bear Creek Road",
+      "segment_from": "Westside Road junction",
+      "segment_to": "North of Parkinson Road",
+      "direction": "BOTH",
+      "status": "CLOSED",
+      "severity": "MAJOR",
+      "cause": "Evacuation order zone — fire approaching from north",
+      "coordinates_from": { "lat": 49.935, "lng": -119.515 },
+      "coordinates_to": { "lat": 49.945, "lng": -119.520 },
+      "midpoint": { "lat": 49.940, "lng": -119.518 },
+      "closed_at": "2023-08-17T13:25:00-07:00",
+      "reopened_at": null,
+      "demo_notes": "One of the first closures — the initial 68-property evacuation order included all properties off Bear Creek Road north of Parkinson Road. This is the earliest closure in the timeline and could be used as the starting state of the demo."
+    }
+  ],
+  "demo_timeline": [
+    {
+      "time": "2023-08-17T13:25:00-07:00",
+      "event": "Evacuation order issued for 68 properties off Bear Creek Road. Bear Creek Road closed.",
+      "closures_active": ["closure_004"]
+    },
+    {
+      "time": "2023-08-17T19:00:00-07:00",
+      "event": "Westside Road closed in both directions as fire moves toward Raymer Bay and Bear Creek areas. Wind gusts intensify.",
+      "closures_active": ["closure_004", "closure_001"]
+    },
+    {
+      "time": "2023-08-17T20:00:00-07:00",
+      "event": "DriveBC issues travel advisory for Hwy 97 between Glenrosa Road and Bennett Bridge. 1,100 hectare fire estimate.",
+      "closures_active": ["closure_004", "closure_001", "closure_002"]
+    },
+    {
+      "time": "2023-08-17T21:00:00-07:00",
+      "event": "Rose Valley and West Kelowna Estates under evacuation order. All access roads closed. 763 additional properties ordered to evacuate.",
+      "closures_active": ["closure_004", "closure_001", "closure_002", "closure_003"]
+    },
+    {
+      "time": "2023-08-17T21:55:00-07:00",
+      "event": "Fire jumps Okanagan Lake — new wildfires erupt on Kelowna side (Clifton/McKinley area). State of emergency declared by City of Kelowna.",
+      "closures_active": ["closure_004", "closure_001", "closure_002", "closure_003"]
+    }
+  ]
+}

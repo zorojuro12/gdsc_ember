@@ -1,0 +1,39 @@
+---
+description: Every new function must have a single-sentence comment explaining what it does
+alwaysApply: true
+---
+
+# Function Comments
+
+Every new function must have a single-sentence comment directly above it explaining what it does.
+
+- The comment should be one concise sentence — no multi-line docstrings or verbose explanations.
+- Describe the **purpose**, not the implementation mechanics.
+
+## Examples
+
+### Python
+
+```python
+# Ranks shelters by drive time and filters by accessibility flags.
+def rank_shelters(shelters: list[dict], profile: dict) -> list[dict]:
+    ...
+```
+
+### TypeScript
+
+```typescript
+// Fetches the latest briefing data for the given address.
+async function fetchBriefing(address: string): Promise<Briefing> {
+  ...
+}
+```
+
+### React Component (TSX)
+
+```tsx
+// Renders the evacuation route polyline on the map.
+function RouteLayer({ polyline }: RouteLayerProps) {
+  ...
+}
+```

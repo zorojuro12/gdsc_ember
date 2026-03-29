@@ -1,0 +1,15 @@
+---
+description: Frontend conventions for React components
+globs: frontend/**/*
+alwaysApply: false
+---
+
+- Use functional components with hooks only (no class components)
+- TypeScript strict mode — no `any` types
+- Tailwind CSS for all styling — no CSS modules, no styled-components
+- React Query for all data fetching — useQuery with refetchInterval for polling
+- All API calls go to the FastAPI backend (relative URL /api/...)
+- Profile flags persist in localStorage key "ember_profile_flags"
+- Component files go in frontend/src/components/
+- Admin components go in frontend/src/components/admin/
+- Map component uses Mapbox GL JS with token from VITE_MAPBOX_TOKEN env var
