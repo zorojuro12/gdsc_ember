@@ -15,15 +15,15 @@ Labels:
 - [x] 🟢 Set up `.env.example` with `MAPBOX_TOKEN=`, `GOOGLE_MAPS_API_KEY=`, `ANTHROPIC_API_KEY=`, `DEMO_MODE=true`
 - [x] 🟢 Move scenario data files to `/data/scenarios/2023-west-kelowna/` — `mcdougall_creek_perimeter.geojson`, `shelters.json`, `road_closures.json`, `2023-08-15.csv` through `2023-08-19.csv`
 - [x] 🟢 Move docx files to `/docs/` — `EMBER_Project_Overview_Final_v2.docx`, `EMBER_Addendum_UI_API_Contracts.docx`
-- [ ] 🟢 Initialize React + TypeScript + Vite frontend in `/frontend` — `npm create vite@latest . -- --template react-ts`
-- [ ] 🟢 Install frontend deps: `tailwindcss`, `mapbox-gl`, `@tanstack/react-query`, `react-router-dom`
-- [ ] 🟢 Configure Tailwind CSS — `tailwind.config.js`, `postcss.config.js`, base styles in `index.css`
-- [ ] 🟢 Initialize FastAPI backend in `/backend` — create `main.py`, `requirements.txt`
-- [ ] 🟢 Backend `requirements.txt`: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
-- [ ] 🟢 Create `backend/cache.py` — in-memory dict cache with TTL (see CLAUDE.md reference implementation)
-- [ ] 🟡 Wire Demo Mode toggle — `DEMO_MODE` env var read in backend `main.py`, exposed via `GET /api/config` endpoint, frontend reads it on startup. Think through: how does the frontend know demo mode is on? How does the backend conditionally load static data vs call live APIs?
-- [ ] 🟢 Base Mapbox GL JS map component in `frontend/src/components/Map.tsx` — renders empty map centered on West Kelowna (49.86, -119.58) with token from env var
-- [ ] 🟢 Load and render `mcdougall_creek_perimeter.geojson` on the map as a red polygon fill with dark red outline
+- [x] 🟢 Initialize React + TypeScript + Vite frontend in `/frontend` — `npm create vite@latest . -- --template react-ts`
+- [x] 🟢 Install frontend deps: `tailwindcss`, `mapbox-gl`, `@tanstack/react-query`, `react-router-dom`
+- [x] 🟢 Configure Tailwind CSS — `tailwind.config.js`, `postcss.config.js`, base styles in `index.css`
+- [x] 🟢 Initialize FastAPI backend in `/backend` — create `main.py`, `requirements.txt`
+- [x] 🟢 Backend `requirements.txt`: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
+- [x] 🟢 Create `backend/cache.py` — in-memory dict cache with TTL (see CLAUDE.md reference implementation)
+- [x] 🟡 Wire Demo Mode toggle — `DEMO_MODE` env var read in backend `main.py`, exposed via `GET /api/config` endpoint, frontend reads it on startup. Think through: how does the frontend know demo mode is on? How does the backend conditionally load static data vs call live APIs?
+- [x] 🟢 Base Mapbox GL JS map component in `frontend/src/components/Map.tsx` — renders empty map centered on West Kelowna (49.86, -119.58) with token from env var
+- [x] 🟢 Load and render `mcdougall_creek_perimeter.geojson` on the map as a red polygon fill with dark red outline
 - [ ] 🟢 Deploy frontend to Vercel — connect GitHub repo, set env vars
 - [ ] 🟢 Deploy backend to Railway — connect GitHub repo, set env vars, configure `uvicorn` start command
 - [ ] 🟢 Git: initial commit with scaffold, data files, and working map — push to main
