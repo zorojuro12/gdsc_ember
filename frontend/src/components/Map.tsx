@@ -36,6 +36,14 @@ function bboxPolygon(
   }
 }
 
+type Coord = { lat: number; lng: number }
+type RoadClosure = {
+  road_name: string
+  status: string
+  coordinates_from: Coord
+  coordinates_to: Coord
+}
+
 export default function Map() {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
@@ -54,10 +62,18 @@ export default function Map() {
 
     map.on('load', () => {
       void (async () => {
-        const res = await fetch('/mcdougall_creek_perimeter.geojson')
-        const perimeter = (await res.json()) as {
+        const [perimeterRes, closuresRes] = await Promise.all([
+          fetch('/mcdougall_creek_perimeter.geojson'),
+          fetch('/road_closures.json'),
+        ])
+        const perimeter = (await perimeterRes.json()) as {
           features: Array<{ geometry: { coordinates: number[][][] } }>
         }
+        const closuresData = (await closuresRes.json()) as {
+          road_closures: RoadClosure[]
+        }
+
+        // --- Evacuation zone placeholders ---
 
         const allCoords = perimeter.features.flatMap((f) =>
           f.geometry.coordinates.flat(),
@@ -71,7 +87,7 @@ export default function Map() {
           Math.max(...lats),
         ]
 
-        // Evacuation Alert zone (5km buffer) — added first, renders underneath Order zone
+        // Evacuation Alert zone (5km buffer) — rendered first, underneath Order zone
         map.addSource('evac-alert', {
           type: 'geojson',
           data: bboxPolygon(...bbox, 5),
@@ -107,7 +123,8 @@ export default function Map() {
           paint: { 'line-color': '#E24B4A', 'line-width': 1.5 },
         })
 
-        // Fire perimeter — on top of both evacuation zones
+        // --- Fire perimeter ---
+
         map.addSource('fire-perimeter', {
           type: 'geojson',
           data: '/mcdougall_creek_perimeter.geojson',
@@ -123,6 +140,68 @@ export default function Map() {
           type: 'line',
           source: 'fire-perimeter',
           paint: { 'line-color': '#A32D2D', 'line-width': 2 },
+        })
+
+        // --- Road closures ---
+
+        // Mapbox uses [lng, lat]; JSON has { lat, lng } — swap here.
+        const closureFeatures = closuresData.road_closures.map((c) => ({
+          type: 'Feature' as const,
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: [
+              [c.coordinates_from.lng, c.coordinates_from.lat],
+              [c.coordinates_to.lng, c.coordinates_to.lat],
+            ],
+          },
+          properties: {
+            road_name: c.road_name,
+            status: c.status,
+          },
+        }))
+
+        map.addSource('road-closures', {
+          type: 'geojson',
+          data: { type: 'FeatureCollection', features: closureFeatures },
+        })
+
+        // CLOSED = red 4px, ADVISORY = amber 3px; both dashed
+        map.addLayer({
+          id: 'road-closures-line',
+          type: 'line',
+          source: 'road-closures',
+          paint: {
+            'line-color': [
+              'match',
+              ['get', 'status'],
+              'CLOSED', '#E24B4A',
+              '#EF9F27', // ADVISORY (default)
+            ],
+            'line-width': ['match', ['get', 'status'], 'CLOSED', 4, 3],
+            'line-dasharray': [4, 2],
+          },
+        })
+
+        map.addLayer({
+          id: 'road-closures-labels',
+          type: 'symbol',
+          source: 'road-closures',
+          layout: {
+            'symbol-placement': 'line',
+            'text-field': ['get', 'road_name'],
+            'text-size': 11,
+            'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+          },
+          paint: {
+            'text-color': [
+              'match',
+              ['get', 'status'],
+              'CLOSED', '#E24B4A',
+              '#EF9F27',
+            ],
+            'text-halo-color': '#ffffff',
+            'text-halo-width': 1.5,
+          },
         })
       })()
     })
