@@ -1,6 +1,26 @@
 # EMBER session log
 
-## Last session: Day 4 — Demo Mode toggle wiring
+## Last session: Day 5 — Mapbox map with fire perimeter
+
+### What was done
+- Created `frontend/src/components/Map.tsx` — Mapbox GL JS map, full-width `h-[65vh]`, centered West Kelowna (-119.58, 49.86), zoom 11, streets-v12 style
+- On `map.on('load')`: adds `fire-perimeter` GeoJSON source and two layers — fill (#E24B4A, 0.15 opacity) and line (#A32D2D, width 2)
+- GeoJSON copied to `frontend/public/mcdougall_creek_perimeter.geojson` and referenced as `/mcdougall_creek_perimeter.geojson` (Vite serves public/ at root)
+- Replaced scaffold `App.tsx` with minimal wrapper that renders `<Map />`
+- TypeScript check passes clean
+- Committed: `feat: add Mapbox map with McDougall Creek fire perimeter`
+- Checked off plan.md Phase 1 items for Map component and perimeter layer
+
+### Decisions made
+- GeoJSON served from `frontend/public/` (not imported as JSON module) — Mapbox loads it via URL, works offline, avoids outside-Vite-root import issues
+- `useRef` guard (`if (mapRef.current) return`) handles React 19 StrictMode double-mount cleanly
+
+### Next session
+- Phase 1 continued: deploy frontend to Vercel, deploy backend to Railway
+
+---
+
+## Session: Day 4 — Demo Mode toggle wiring
 
 ### What was done
 - Backend (`main.py`) already had `DEMO_MODE` from dotenv and `GET /api/config` — no changes needed
