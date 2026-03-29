@@ -15,9 +15,9 @@ Labels:
 - [x] 🟢 Set up `.env.example` with `MAPBOX_TOKEN=`, `GOOGLE_MAPS_API_KEY=`, `ANTHROPIC_API_KEY=`, `DEMO_MODE=true`
 - [x] 🟢 Move scenario data files to `/data/scenarios/2023-west-kelowna/` — `mcdougall_creek_perimeter.geojson`, `shelters.json`, `road_closures.json`, `2023-08-15.csv` through `2023-08-19.csv`
 - [x] 🟢 Move docx files to `/docs/` — `EMBER_Project_Overview_Final_v2.docx`, `EMBER_Addendum_UI_API_Contracts.docx`
-- [ ] 🟢 Initialize React + TypeScript + Vite frontend in `/frontend` — `npm create vite@latest . -- --template react-ts`
-- [ ] 🟢 Install frontend deps: `tailwindcss`, `mapbox-gl`, `@tanstack/react-query`, `react-router-dom`
-- [ ] 🟢 Configure Tailwind CSS — `tailwind.config.js`, `postcss.config.js`, base styles in `index.css`
+- [x] 🟢 Initialize React + TypeScript + Vite frontend in `/frontend` — `npm create vite@latest . -- --template react-ts`
+- [x] 🟢 Install frontend deps: `tailwindcss`, `mapbox-gl`, `@tanstack/react-query`, `react-router-dom`
+- [x] 🟢 Configure Tailwind CSS — `tailwind.config.js`, `postcss.config.js`, base styles in `index.css`
 - [ ] 🟢 Initialize FastAPI backend in `/backend` — create `main.py`, `requirements.txt`
 - [ ] 🟢 Backend `requirements.txt`: `fastapi`, `uvicorn[standard]`, `shapely`, `pandas`, `anthropic`, `httpx`, `python-dotenv`
 - [ ] 🟢 Create `backend/cache.py` — in-memory dict cache with TTL (see CLAUDE.md reference implementation)
