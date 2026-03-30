@@ -1,0 +1,27 @@
+{
+  "metadata": {
+    "description": "Pre-computed demo routes for 2023 McDougall Creek fire scenario",
+    "origin_address": "1240 Marble Terrace, West Kelowna, BC",
+    "origin_lat": 49.8625,
+    "origin_lng": -119.5800,
+    "notes": "Polyline is a Google Maps encoded polyline string. Drive times are realistic Aug 17 7PM estimates with moderate evacuation traffic."
+  },
+  "primary": {
+    "summary": "Hwy 97 South via Boucherie Rd",
+    "distance_km": 5.8,
+    "duration_min": 8,
+    "polyline": "q~ioHxlwxUQo@c@sA_@kAa@sAe@}Au@aC_@oA[{@Yw@[y@q@eBi@wAa@eAa@cAe@kA_@{@Yw@Wo@[w@[s@Yw@Yy@"
+  },
+  "fallback": {
+    "summary": "Hwy 97C West to Merritt",
+    "distance_km": 85.0,
+    "duration_min": 55
+  },
+  "shelter_drive_times": {
+    "shelter_001": 8,
+    "shelter_002": 65,
+    "shelter_003": 55,
+    "shelter_004": 15,
+    "shelter_005": 18
+  }
+}
