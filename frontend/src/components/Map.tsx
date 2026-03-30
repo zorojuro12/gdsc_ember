@@ -311,6 +311,38 @@ const STYLES = {
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
 } as const
 
+type LayerVisibility = {
+  spread: boolean
+  evacZones: boolean
+  closures: boolean
+  shelters: boolean
+}
+
+const LAYER_GROUPS: Record<keyof LayerVisibility, string[]> = {
+  spread: ['spread-6hr-fill', 'spread-6hr-line', 'spread-4hr-fill', 'spread-4hr-line', 'spread-2hr-fill', 'spread-2hr-line'],
+  evacZones: ['evac-alert-fill', 'evac-alert-line', 'evac-order-fill', 'evac-order-line'],
+  closures: ['road-closures-line', 'road-closures-labels'],
+  shelters: ['shelter-pins', 'shelter-labels'],
+}
+
+const LAYER_LABELS: Record<keyof LayerVisibility, string> = {
+  spread: 'Spread projections',
+  evacZones: 'Evac zones',
+  closures: 'Road closures',
+  shelters: 'Shelters',
+}
+
+function applyLayerVisibility(map: mapboxgl.Map, vis: LayerVisibility) {
+  for (const group of Object.keys(LAYER_GROUPS) as Array<keyof LayerVisibility>) {
+    const visibility = vis[group] ? 'visible' : 'none'
+    for (const id of LAYER_GROUPS[group]) {
+      if (map.getLayer(id)) {
+        map.setLayoutProperty(id, 'visibility', visibility)
+      }
+    }
+  }
+}
+
 // Adds or updates the user location blue dot on the map (always on top).
 function updateUserLocation(map: mapboxgl.Map, location: { lat: number; lng: number } | null) {
   const data: GeoJSON.FeatureCollection = {
@@ -361,6 +393,14 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
   const routePolylineRef = useRef<string | null>(null)
   const userLocationRef = useRef<{ lat: number; lng: number } | null>(null)
   const [satellite, setSatellite] = useState(false)
+  const [layerVis, setLayerVis] = useState<LayerVisibility>({
+    spread: true,
+    evacZones: true,
+    closures: true,
+    shelters: true,
+  })
+  const layerVisRef = useRef<LayerVisibility>(layerVis)
+  const [showLayersPanel, setShowLayersPanel] = useState(false)
 
   useEffect(() => {
     if (!containerRef.current || mapRef.current) return
@@ -408,6 +448,7 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
     map.on('style.load', () => {
       if (!initialLoadComplete || !mapData) return
       addAllLayers(map, mapData)
+      applyLayerVisibility(map, layerVisRef.current)
       if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
       if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
     })
@@ -437,6 +478,18 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
     }
   }, [userLocation])
 
+  // Apply layer visibility changes to the map
+  useEffect(() => {
+    layerVisRef.current = layerVis
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    applyLayerVisibility(map, layerVis)
+  }, [layerVis])
+
+  const handleLayerToggle = useCallback((group: keyof LayerVisibility) => {
+    setLayerVis(prev => ({ ...prev, [group]: !prev[group] }))
+  }, [])
+
   const handleStyleToggle = useCallback(() => {
     if (!mapRef.current) return
     const next = !satellite
@@ -447,12 +500,40 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
   return (
     <div ref={containerRef} className="relative w-full h-[65vh] lg:h-full">
       <MapLegend />
-      <button
-        onClick={handleStyleToggle}
-        className="absolute top-2.5 right-10 z-10 bg-white/90 text-gray-800 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
-      >
-        {satellite ? 'Map' : 'Satellite'}
-      </button>
+      <div className="absolute top-2.5 right-10 z-10 flex gap-1.5 items-start">
+        {/* Layers toggle panel */}
+        <div className="relative">
+          <button
+            onClick={() => setShowLayersPanel(v => !v)}
+            className="bg-white/90 text-gray-800 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
+          >
+            Layers
+          </button>
+          {showLayersPanel && (
+            <div className="absolute top-8 right-0 bg-white rounded-lg shadow-lg p-3 min-w-[160px]">
+              {(Object.keys(LAYER_GROUPS) as Array<keyof LayerVisibility>).map(group => (
+                <label key={group} className="flex items-center gap-2 py-1 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    checked={layerVis[group]}
+                    onChange={() => handleLayerToggle(group)}
+                    className="rounded"
+                  />
+                  <span className="text-xs text-gray-700">{LAYER_LABELS[group]}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Satellite / street toggle */}
+        <button
+          onClick={handleStyleToggle}
+          className="bg-white/90 text-gray-800 text-xs font-medium px-3 py-1.5 rounded-full shadow hover:bg-white transition-colors"
+        >
+          {satellite ? 'Map' : 'Satellite'}
+        </button>
+      </div>
     </div>
   )
 }
