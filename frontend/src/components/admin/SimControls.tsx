@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import type { AdminRoad } from '../../types'
 
 // All closure IDs defined in the scenario, in timeline order.
 const ALL_CLOSURE_IDS = ['closure_004', 'closure_001', 'closure_002', 'closure_003']
