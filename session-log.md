@@ -1,6 +1,38 @@
 # EMBER session log
 
-## Last session: Day 14 (continued) — Live API testing + bug fixes
+## Last session: Day 16 — Phase 5 Admin View complete
+
+### What was done
+- Added layer toggle panel to `Map.tsx` — "Layers" button opens a panel with checkboxes for Spread Projections, Evac Zones, Road Closures, Shelters. Uses `setLayoutProperty(..., 'visibility', ...)`. State stored in `layerVisRef` so it survives satellite style reloads.
+- Set up React Router: `BrowserRouter` in `main.tsx`, `App.tsx` becomes router-only, resident view moved to `views/ResidentView.tsx`, admin view at `views/AdminView.tsx`
+- Admin layout: `h-screen flex flex-col`, header + 60/40 map/panel split. Same `Map.tsx` reused (layer + satellite toggles work on admin map too). "← Resident View" back link. "Admin" link added to resident `TopBar.tsx`.
+- Implemented `SituationPanel.tsx` — 2×3 metric card grid: fire name/ID, perimeter (ha), spread rate badge, wind, last updated time, properties under order/alert. Skeleton while loading.
+- Implemented `RoadPanel.tsx` — colored dot + road name + status badge (CLOSED=red, ADVISORY=amber, OPEN=green). "No active road events" empty state.
+- Implemented `ShelterPanel.tsx` — per-shelter card with name, status badge, capacity, accessibility tags, and 3 override buttons (Open/Filling/Near Full). Active status highlighted in matching color. Calls `POST /api/admin/shelter/{id}/status` via `onStatusChange` prop wired in `AdminView`.
+- Implemented `SimControls.tsx` — Demo Time display (current sim time + step counter), closure dropdown (inactive closures only), [Advance to Next Step] (disabled + relabeled at last step), [Reset].
+- Rewrote `backend/demo_state.py` — `TIMELINE` list of 4 full-snapshot milestones (7PM/8PM/9PM/9:55PM). `advance_time()` increments step by 1, capped at 4, applies milestone's closures + shelter statuses atomically. `reset()` restores step 1.
+- Implemented `POST /api/admin/simulate/advance` (no body) and `POST /api/admin/simulate/reset` in `main.py`.
+- Updated `GET /api/admin/situation` — evacuations now from state (not hardcoded), adds `timeline_step`, `max_step`, `active_closure_ids` to response, weather lookup now uses hour from `current_time` instead of hardcoded 19.
+- Added `AdminSituationResponse` type fields: `timeline_step`, `max_step`, `active_closure_ids`.
+- Added Demo/Live badge to admin header — gray "DEMO" or pulsing red "LIVE" pill from `AppConfigContext`.
+- Added `useAdminSituation` hook — polls `GET /api/admin/situation` every 30s.
+
+### Decisions made
+- Admin map reuses `Map.tsx` — no separate component. Layer toggle kept on admin map.
+- Timeline uses full snapshots per step, not incremental diffs — simpler reset, no drift.
+- Advance = always +1 step (not arbitrary hours) — guarantees operator sees every closure escalation in order.
+- Evacuation counts kept constant across all steps (2,462 order / 4,801 alert) — sourced numbers, drama comes from shelter/closure changes instead.
+- Demo/Live badge is static (read from env via `/api/config`), no runtime toggle.
+- `active_closure_ids` added to situation response to avoid fragile road-name-to-ID reverse mapping in frontend.
+
+### Known issues / next steps
+- Census vulnerability overlay (stretch goal) — skipped, not critical for demo
+- Phase 5 git merge to main pending (after demo mode test)
+- Phase 6: offline test, polish, responsive layout check, deployment
+
+---
+
+## Previous: Day 15 — Evac zone south boundary fix + BriefingCard null-safety
 
 ### What was done
 - Added real API keys to `backend/.env` and `frontend/.env`
