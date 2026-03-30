@@ -30,7 +30,7 @@ def load_demo_data() -> None:
         path = SCENARIO_DIR / filename
         if path.exists():
             with open(path) as f:
-                cache.set(cache_key, json.load(f))
+                cache.set(cache_key, json.load(f), no_expire=True)
         else:
             print(f"[demo] WARNING: {path} not found — skipping {cache_key}")
 
