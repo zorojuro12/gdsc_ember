@@ -72,10 +72,10 @@ Labels:
 
 ## Phase 5 — Admin View (Days 14-16)
 
-- [ ] 🟡 Admin route `/admin` in React Router with split-panel layout — map 60% width left, panels 40% width right. Think through: does this share the same Map component as the resident view, or a separate instance? How does the admin map differ (shows vulnerability overlay, all shelters, all closures at once)?
-- [ ] 🟢 Situation summary panel `frontend/src/components/admin/SituationPanel.tsx`: metric cards for perimeter size (ha), wind speed/direction, spread rate classification, last refresh time, properties under order count, properties under alert count
-- [ ] 🟢 Road status panel `frontend/src/components/admin/RoadPanel.tsx`: list of road closures with color-coded badges — red (CLOSED), amber (ADVISORY), green (OPEN)
-- [ ] 🟢 Shelter panel `frontend/src/components/admin/ShelterPanel.tsx`: shelter rows with name, capacity, status badge, and inline override buttons (Open/Filling/Near Full)
+- [x] 🟡 Admin route `/admin` in React Router with split-panel layout — map 60% width left, panels 40% width right. Think through: does this share the same Map component as the resident view, or a separate instance? How does the admin map differ (shows vulnerability overlay, all shelters, all closures at once)?
+- [x] 🟢 Situation summary panel `frontend/src/components/admin/SituationPanel.tsx`: metric cards for perimeter size (ha), wind speed/direction, spread rate classification, last refresh time, properties under order count, properties under alert count
+- [x] 🟢 Road status panel `frontend/src/components/admin/RoadPanel.tsx`: list of road closures with color-coded badges — red (CLOSED), amber (ADVISORY), green (OPEN)
+- [x] 🟢 Shelter panel `frontend/src/components/admin/ShelterPanel.tsx`: shelter rows with name, capacity, status badge, and inline override buttons (Open/Filling/Near Full)
 - [x] 🟢 Implement `POST /api/admin/shelter/{id}/status` in `backend/main.py` — accepts `{ "status": "Filling" }`, updates in-memory shelter state, returns updated shelter
 - [x] 🟢 Implement `POST /api/admin/simulate/closure` in `backend/main.py` — accepts `{ "closure_id": "closure_001" }`, activates the closure in the demo timeline, returns active closures list
 - [ ] 🟡 Implement `POST /api/admin/simulate/advance` in `backend/main.py` — accepts `{ "hours": 2 }`, advances demo clock, updates shelter statuses per timeline (T+2: Royal LePage → Filling, T+4: → Near Full), returns new time and timeline step. Think through: need a global demo_state object that tracks current_time and timeline_step. Advancing time should update shelter statuses, activate closures per the timeline in road_closures.json, and shift the fire perimeter to the projected spread. What resets when "Reset" is clicked?
