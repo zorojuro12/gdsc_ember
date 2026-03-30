@@ -5,12 +5,14 @@ Pure Python implementation (no external deps). Steps:
   1. Load perimeter vertices and compute convex hull (Andrew's monotone chain).
   2. Radially expand each hull vertex outward from centroid by buffer distance,
      adjusting for lat/lng degree scaling at 49.86° N.
-  3. Apply a southern latitude floor so the zones don't extend into the city
+  3. Apply a southern latitude floor — prevents zones extending into the city
      shelter area south of West Kelowna.
+  4. Apply an eastern longitude ceiling — prevents zones crossing Okanagan Lake
+     into Kelowna. Western lakeshore runs ~lng -119.505 in the relevant area.
 
 Buffer distances:
-  - evac_order_zone: 3 km, floor lat 49.90 (Rose Valley / Bear Creek area)
-  - evac_alert_zone: 6 km, floor lat 49.90 (same southern boundary)
+  - evac_order_zone: 3 km, south floor 49.87,  east ceiling -119.505
+  - evac_alert_zone: 6 km, south floor 49.865, east ceiling -119.505
 
 Run from repo root:
     python3 backend/scripts/generate_evac_zones.py
@@ -28,14 +30,18 @@ LAT_REF = 49.86
 KM_PER_DEG_LAT = 111.0
 KM_PER_DEG_LNG = 111.0 * math.cos(math.radians(LAT_REF))  # ≈ 71.3 km/deg
 
-# Per-zone southern latitude floors.
-# Fire perimeter south edge: 49.8721. Royal LePage shelter: 49.8587.
-# Order floor (49.87) sits just south of the fire perimeter so the perimeter is
-# fully contained. Alert floor (49.865) extends slightly further south than the
-# order zone while staying 0.008° north of Royal LePage.
+# (filename, buffer_km, label, south_floor_lat, east_ceiling_lng)
+#
+# South floors — fire perimeter south edge: 49.8721, Royal LePage: 49.8587
+#   Order floor 49.87  → fire perimeter just contained, Royal LePage excluded
+#   Alert floor 49.865 → extends slightly further south, still excludes Royal LePage
+#
+# East ceilings — Okanagan Lake western shore: ~lng -119.505
+#   Both zones clipped here so neither crosses the lake into Kelowna.
+#   Salvation Army: -119.4835, Prospera: -119.4963 — both east of -119.505 → excluded.
 EVAC_ZONES = [
-    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone", 49.87),
-    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone", 49.865),
+    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone", 49.87,  -119.505),
+    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone", 49.865, -119.505),
 ]
 
 
@@ -102,10 +108,15 @@ def expand_polygon(coords, buffer_km):
 
 
 def apply_south_floor(coords, floor_lat):
-    """Clip any vertex that is south of floor_lat up to floor_lat.
-    This prevents the zone from extending into the city's shelter area.
-    """
+    """Clip vertices south of floor_lat back up to floor_lat."""
     return [[lng, max(lat, floor_lat)] for lng, lat in coords]
+
+
+def apply_east_ceiling(coords, ceiling_lng):
+    """Clip vertices east of ceiling_lng back to ceiling_lng.
+    Prevents the zone from crossing Okanagan Lake into Kelowna.
+    """
+    return [[min(lng, ceiling_lng), lat] for lng, lat in coords]
 
 
 def make_feature_collection(coords, label: str) -> dict:
@@ -136,15 +147,16 @@ def main():
     hull_cx, hull_cy = centroid(hull)
     print(f"  Hull centroid: lat={hull_cy:.4f}, lng={hull_cx:.4f}")
 
-    for filename, buffer_km, label, south_floor in EVAC_ZONES:
+    for filename, buffer_km, label, south_floor, east_ceiling in EVAC_ZONES:
         expanded = expand_polygon(hull, buffer_km)
         clipped = apply_south_floor(expanded, south_floor)
+        clipped = apply_east_ceiling(clipped, east_ceiling)
         out_path = SCENARIO_DIR / filename
         with open(out_path, "w") as f:
             json.dump(make_feature_collection(clipped, label), f)
         lats = [c[1] for c in clipped]
         lngs = [c[0] for c in clipped]
-        print(f"  {filename}: {buffer_km}km buffer, floor={south_floor} "
+        print(f"  {filename}: {buffer_km}km buffer, south≥{south_floor}, east≤{east_ceiling} "
               f"→ lat [{min(lats):.4f},{max(lats):.4f}] lng [{min(lngs):.4f},{max(lngs):.4f}]")
 
     print("Done.")
