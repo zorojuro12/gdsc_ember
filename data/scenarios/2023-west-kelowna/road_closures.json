@@ -10,7 +10,7 @@
       "CBC BC reporting",
       "Vancouver Is Awesome Aug 18 report"
     ],
-    "notes": "Road closures reconstructed from news reports. Exact timestamps are approximate — based on the nearest update timestamp from emergency operations or news coverage. Coordinates are approximate midpoints of affected segments."
+    "notes": "Road closures reconstructed from news reports. Exact timestamps are approximate — based on the nearest update timestamp from emergency operations or news coverage. Waypoints trace approximate road geometry derived from OpenStreetMap."
   },
   "road_closures": [
     {
@@ -22,6 +22,17 @@
       "status": "CLOSED",
       "severity": "MAJOR",
       "cause": "Wildfire — McDougall Creek fire burning across road corridor",
+      "waypoints": [
+        { "lat": 49.930, "lng": -119.510 },
+        { "lat": 49.952, "lng": -119.508 },
+        { "lat": 49.971, "lng": -119.506 },
+        { "lat": 49.993, "lng": -119.497 },
+        { "lat": 50.018, "lng": -119.487 },
+        { "lat": 50.046, "lng": -119.480 },
+        { "lat": 50.074, "lng": -119.474 },
+        { "lat": 50.097, "lng": -119.472 },
+        { "lat": 50.120, "lng": -119.475 }
+      ],
       "coordinates_from": { "lat": 49.930, "lng": -119.510 },
       "coordinates_to": { "lat": 50.120, "lng": -119.475 },
       "midpoint": { "lat": 50.025, "lng": -119.493 },
@@ -38,6 +49,14 @@
       "status": "ADVISORY",
       "severity": "MODERATE",
       "cause": "Wildfire proximity — prepare for short-notice closure due to McDougall Creek fire",
+      "waypoints": [
+        { "lat": 49.852, "lng": -119.617 },
+        { "lat": 49.858, "lng": -119.598 },
+        { "lat": 49.864, "lng": -119.575 },
+        { "lat": 49.871, "lng": -119.547 },
+        { "lat": 49.878, "lng": -119.528 },
+        { "lat": 49.886, "lng": -119.505 }
+      ],
       "coordinates_from": { "lat": 49.852, "lng": -119.617 },
       "coordinates_to": { "lat": 49.886, "lng": -119.505 },
       "midpoint": { "lat": 49.869, "lng": -119.561 },
@@ -54,6 +73,13 @@
       "status": "CLOSED",
       "severity": "MAJOR",
       "cause": "Evacuation zone — all access blocked by fire activity",
+      "waypoints": [
+        { "lat": 49.870, "lng": -119.580 },
+        { "lat": 49.874, "lng": -119.576 },
+        { "lat": 49.878, "lng": -119.573 },
+        { "lat": 49.882, "lng": -119.572 },
+        { "lat": 49.885, "lng": -119.570 }
+      ],
       "coordinates_from": { "lat": 49.870, "lng": -119.580 },
       "coordinates_to": { "lat": 49.885, "lng": -119.570 },
       "midpoint": { "lat": 49.878, "lng": -119.575 },
@@ -70,6 +96,13 @@
       "status": "CLOSED",
       "severity": "MAJOR",
       "cause": "Evacuation order zone — fire approaching from north",
+      "waypoints": [
+        { "lat": 49.935, "lng": -119.515 },
+        { "lat": 49.937, "lng": -119.518 },
+        { "lat": 49.940, "lng": -119.520 },
+        { "lat": 49.943, "lng": -119.520 },
+        { "lat": 49.945, "lng": -119.520 }
+      ],
       "coordinates_from": { "lat": 49.935, "lng": -119.515 },
       "coordinates_to": { "lat": 49.945, "lng": -119.520 },
       "midpoint": { "lat": 49.940, "lng": -119.518 },
