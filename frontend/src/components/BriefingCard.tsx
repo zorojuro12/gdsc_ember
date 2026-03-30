@@ -80,6 +80,7 @@ export default function BriefingCard({
       </div>
 
       {/* Threat */}
+      {threat && (
       <div className="p-4">
         <SectionLabel>Threat</SectionLabel>
         <div className="flex items-center justify-between mb-1">
@@ -93,8 +94,10 @@ export default function BriefingCard({
           {threat.wind.speed_kmh} km/h {threat.wind.direction}
         </p>
       </div>
+      )}
 
       {/* Route */}
+      {route && (
       <div className="p-4">
         <SectionLabel>Route</SectionLabel>
         <p className="text-white text-sm font-medium">{route.summary}</p>
@@ -103,6 +106,7 @@ export default function BriefingCard({
         </p>
         <p className="text-gray-500 text-xs mt-1">Fallback: {route.fallback_summary}</p>
       </div>
+      )}
 
       {/* Shelter */}
       {shelter && (
