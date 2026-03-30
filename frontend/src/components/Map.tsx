@@ -6,42 +6,12 @@ import MapLegend from './MapLegend'
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
 
-// Degrees per km at West Kelowna latitude (49.86°) — used for evac zone placeholders
-const KM_LAT = 1 / 111
-const KM_LNG = 1 / (111 * Math.cos((49.86 * Math.PI) / 180))
-
-// Returns a rectangular GeoJSON polygon expanded bufferKm around the given bounding box.
-function bboxPolygon(
-  minLng: number,
-  minLat: number,
-  maxLng: number,
-  maxLat: number,
-  bufferKm: number,
-) {
-  const dLat = bufferKm * KM_LAT
-  const dLng = bufferKm * KM_LNG
-  return {
-    type: 'Feature' as const,
-    geometry: {
-      type: 'Polygon' as const,
-      coordinates: [
-        [
-          [minLng - dLng, minLat - dLat],
-          [maxLng + dLng, minLat - dLat],
-          [maxLng + dLng, maxLat + dLat],
-          [minLng - dLng, maxLat + dLat],
-          [minLng - dLng, minLat - dLat],
-        ],
-      ],
-    },
-    properties: {},
-  }
-}
 
 type Coord = { lat: number; lng: number }
 type RoadClosure = {
   road_name: string
   status: string
+  waypoints?: Coord[]
   coordinates_from: Coord
   coordinates_to: Coord
 }
@@ -51,6 +21,8 @@ type MapData = {
   spread2hr: FeatureCollection
   spread4hr: FeatureCollection
   spread6hr: FeatureCollection
+  evacOrder: FeatureCollection
+  evacAlert: FeatureCollection
   perimeter: { features: Array<{ geometry: { coordinates: number[][][] } }> }
   closures: { road_closures: RoadClosure[] }
   shelters: { shelters: Shelter[] }
@@ -59,18 +31,6 @@ type MapData = {
 // Adds all sources and layers to the map. Called on initial load and after every
 // setStyle() call (which clears all sources/layers).
 function addAllLayers(map: mapboxgl.Map, d: MapData) {
-  const allCoords = d.perimeter.features.flatMap((f) =>
-    f.geometry.coordinates.flat(),
-  )
-  const lngs = allCoords.map((c) => c[0])
-  const lats = allCoords.map((c) => c[1])
-  const bbox: [number, number, number, number] = [
-    Math.min(...lngs),
-    Math.min(...lats),
-    Math.max(...lngs),
-    Math.max(...lats),
-  ]
-
   // --- Fire spread projections (Shapely-computed GeoJSON) ---
   // Layer order: 6hr (bottom) → 4hr → 2hr → everything else on top.
 
@@ -104,9 +64,10 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     })
   }
 
-  // --- Evacuation zone placeholders (bbox polygons) ---
+  // --- Evacuation zones (Shapely-buffered GeoJSON around fire perimeter) ---
+  // Alert zone rendered first (bottom) so order zone sits on top.
 
-  map.addSource('evac-alert', { type: 'geojson', data: bboxPolygon(...bbox, 5) })
+  map.addSource('evac-alert', { type: 'geojson', data: d.evacAlert })
   map.addLayer({
     id: 'evac-alert-fill',
     type: 'fill',
@@ -120,7 +81,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     paint: { 'line-color': '#EF9F27', 'line-width': 1.5 },
   })
 
-  map.addSource('evac-order', { type: 'geojson', data: bboxPolygon(...bbox, 2) })
+  map.addSource('evac-order', { type: 'geojson', data: d.evacOrder })
   map.addLayer({
     id: 'evac-order-fill',
     type: 'fill',
@@ -156,17 +117,18 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
   // --- Road closures ---
 
   // Mapbox uses [lng, lat]; JSON has { lat, lng } — swap here.
-  const closureFeatures = d.closures.road_closures.map((c) => ({
-    type: 'Feature' as const,
-    geometry: {
-      type: 'LineString' as const,
-      coordinates: [
-        [c.coordinates_from.lng, c.coordinates_from.lat],
-        [c.coordinates_to.lng, c.coordinates_to.lat],
-      ],
-    },
-    properties: { road_name: c.road_name, status: c.status },
-  }))
+  // Use waypoints array when present for better road tracing, otherwise fall back
+  // to the two-point from/to line.
+  const closureFeatures = d.closures.road_closures.map((c) => {
+    const coords = c.waypoints && c.waypoints.length >= 2
+      ? c.waypoints.map((w) => [w.lng, w.lat])
+      : [[c.coordinates_from.lng, c.coordinates_from.lat], [c.coordinates_to.lng, c.coordinates_to.lat]]
+    return {
+      type: 'Feature' as const,
+      geometry: { type: 'LineString' as const, coordinates: coords },
+      properties: { road_name: c.road_name, status: c.status },
+    }
+  })
 
   map.addSource('road-closures', {
     type: 'geojson',
@@ -373,10 +335,12 @@ export default function Map({ routePolyline = null }: { routePolyline?: string |
     map.on('load', () => {
       void (async () => {
         initialLoadComplete = true
-        const [s2, s4, s6, perim, clos, shel] = await Promise.all([
+        const [s2, s4, s6, eo, ea, perim, clos, shel] = await Promise.all([
           fetch('/spread_2hr.geojson'),
           fetch('/spread_4hr.geojson'),
           fetch('/spread_6hr.geojson'),
+          fetch('/evac_order_zone.geojson'),
+          fetch('/evac_alert_zone.geojson'),
           fetch('/mcdougall_creek_perimeter.geojson'),
           fetch('/road_closures.json'),
           fetch('/shelters.json'),
@@ -385,6 +349,8 @@ export default function Map({ routePolyline = null }: { routePolyline?: string |
           spread2hr: (await s2.json()) as FeatureCollection,
           spread4hr: (await s4.json()) as FeatureCollection,
           spread6hr: (await s6.json()) as FeatureCollection,
+          evacOrder: (await eo.json()) as FeatureCollection,
+          evacAlert: (await ea.json()) as FeatureCollection,
           perimeter: (await perim.json()) as MapData['perimeter'],
           closures: (await clos.json()) as MapData['closures'],
           shelters: (await shel.json()) as MapData['shelters'],
