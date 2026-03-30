@@ -28,14 +28,14 @@ LAT_REF = 49.86
 KM_PER_DEG_LAT = 111.0
 KM_PER_DEG_LNG = 111.0 * math.cos(math.radians(LAT_REF))  # ≈ 71.3 km/deg
 
-# Southernmost latitude the zones should reach — keeps them out of the city
-# shelter area. Royal LePage is at 49.8587, so staying above 49.90 gives a
-# clear visual gap between the danger zone and the reception centre.
-SOUTH_FLOOR_LAT = 49.90
-
+# Per-zone southern latitude floors.
+# Fire perimeter south edge: 49.8721. Royal LePage shelter: 49.8587.
+# Order floor (49.87) sits just south of the fire perimeter so the perimeter is
+# fully contained. Alert floor (49.865) extends slightly further south than the
+# order zone while staying 0.008° north of Royal LePage.
 EVAC_ZONES = [
-    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone"),
-    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone"),
+    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone", 49.87),
+    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone", 49.865),
 ]
 
 
@@ -136,15 +136,15 @@ def main():
     hull_cx, hull_cy = centroid(hull)
     print(f"  Hull centroid: lat={hull_cy:.4f}, lng={hull_cx:.4f}")
 
-    for filename, buffer_km, label in EVAC_ZONES:
+    for filename, buffer_km, label, south_floor in EVAC_ZONES:
         expanded = expand_polygon(hull, buffer_km)
-        clipped = apply_south_floor(expanded, SOUTH_FLOOR_LAT)
+        clipped = apply_south_floor(expanded, south_floor)
         out_path = SCENARIO_DIR / filename
         with open(out_path, "w") as f:
             json.dump(make_feature_collection(clipped, label), f)
         lats = [c[1] for c in clipped]
         lngs = [c[0] for c in clipped]
-        print(f"  {filename}: {buffer_km}km buffer, floor={SOUTH_FLOOR_LAT} "
+        print(f"  {filename}: {buffer_km}km buffer, floor={south_floor} "
               f"→ lat [{min(lats):.4f},{max(lats):.4f}] lng [{min(lngs):.4f},{max(lngs):.4f}]")
 
     print("Done.")
