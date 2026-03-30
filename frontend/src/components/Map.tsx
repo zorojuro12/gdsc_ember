@@ -422,8 +422,7 @@ export default function Map({ routePolyline = null }: { routePolyline?: string |
   }, [satellite])
 
   return (
-    <div className="relative w-full h-[65vh] lg:h-full">
-      <div ref={containerRef} className="absolute inset-0" />
+    <div ref={containerRef} className="relative w-full h-[65vh] lg:h-full">
       <MapLegend />
       <button
         onClick={handleStyleToggle}

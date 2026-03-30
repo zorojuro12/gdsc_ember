@@ -38,7 +38,7 @@ Labels:
 - [x] 🟢 Wind vector arrows: render wind direction/speed from weather CSV data as arrow markers on map near station 1277 location
 - [x] 🟢 Map legend component in `frontend/src/components/MapLegend.tsx` — color key for all layers
 - [x] 🟢 Satellite/street map style toggle button on map
-- [ ] 🟢 Git: all layers rendering from static JSON — merge to dev
+- [x] 🟢 Git: all layers rendering from static JSON — merge to dev
 
 ## Phase 3 — Backend & Agents (Days 7-10)
 
