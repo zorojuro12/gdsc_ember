@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import mapboxgl from 'mapbox-gl'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { FeatureCollection } from 'geojson'
@@ -302,14 +302,57 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
   })
 }
 
+// Decodes a Google Maps encoded polyline string into [lng, lat] pairs for Mapbox.
+function decodePolyline(encoded: string): [number, number][] {
+  const coords: [number, number][] = []
+  let index = 0, lat = 0, lng = 0
+  while (index < encoded.length) {
+    let b, shift = 0, result = 0
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
+    lat += result & 1 ? ~(result >> 1) : result >> 1
+    shift = 0; result = 0
+    do { b = encoded.charCodeAt(index++) - 63; result |= (b & 0x1f) << shift; shift += 5 } while (b >= 0x20)
+    lng += result & 1 ? ~(result >> 1) : result >> 1
+    coords.push([lng / 1e5, lat / 1e5])
+  }
+  return coords
+}
+
+// Adds or updates the route line source/layer with the given encoded polyline.
+function updateRouteLayer(map: mapboxgl.Map, polyline: string | null) {
+  const coords = polyline ? decodePolyline(polyline) : []
+  const data: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: coords.length > 0 ? [{
+      type: 'Feature',
+      geometry: { type: 'LineString', coordinates: coords },
+      properties: {},
+    }] : [],
+  }
+  const existing = map.getSource('route') as mapboxgl.GeoJSONSource | undefined
+  if (existing) {
+    existing.setData(data)
+  } else {
+    map.addSource('route', { type: 'geojson', data })
+    map.addLayer({
+      id: 'route-line',
+      type: 'line',
+      source: 'route',
+      layout: { 'line-join': 'round', 'line-cap': 'round' },
+      paint: { 'line-color': '#3B82F6', 'line-width': 4, 'line-opacity': 0.9 },
+    })
+  }
+}
+
 const STYLES = {
   streets: 'mapbox://styles/mapbox/streets-v12',
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
 } as const
 
-export default function Map() {
+export default function Map({ routePolyline = null }: { routePolyline?: string | null }) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
+  const routePolylineRef = useRef<string | null>(null)
   const [satellite, setSatellite] = useState(false)
 
   useEffect(() => {
@@ -354,6 +397,7 @@ export default function Map() {
     map.on('style.load', () => {
       if (!initialLoadComplete || !mapData) return
       addAllLayers(map, mapData)
+      if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
     })
 
     return () => {
@@ -362,15 +406,23 @@ export default function Map() {
     }
   }, [])
 
-  function handleStyleToggle() {
+  // Update the route layer whenever the polyline prop changes
+  useEffect(() => {
+    routePolylineRef.current = routePolyline
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    updateRouteLayer(map, routePolyline)
+  }, [routePolyline])
+
+  const handleStyleToggle = useCallback(() => {
     if (!mapRef.current) return
     const next = !satellite
     setSatellite(next)
     mapRef.current.setStyle(next ? STYLES.satellite : STYLES.streets)
-  }
+  }, [satellite])
 
   return (
-    <div className="relative w-full h-[65vh]">
+    <div className="relative w-full h-[65vh] lg:h-full">
       <div ref={containerRef} className="absolute inset-0" />
       <MapLegend />
       <button
