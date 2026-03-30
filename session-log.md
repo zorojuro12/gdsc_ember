@@ -95,3 +95,25 @@
 - Demo threat agent returns hardcoded 7.4 km / 4.2 hr values: the actual perimeter vertex nearest the demo address is ~1.3 km, but that matches a different time window and breaks the pre-generated briefing narrative
 - Python 3.8 compatible: removed `list[str]`, `dict | None`, `tuple[T, U]` type hints — system runs Python 3.8
 - Profile agent uses `flag_key()` to map profile flags to the 5 pre-generated briefing variants; only the first set flag is matched (demo scenarios test one flag at a time)
+
+---
+
+## Day 15 — Evac zone south boundary fix + BriefingCard null-safety
+
+### What was done
+- Identified evac zone south floor bug from screenshot: `SOUTH_FLOOR_LAT = 49.90` was clipping both zones ~3.3 km north of the fire perimeter's actual southern edge, making the fire perimeter visually extend outside the order zone
+- Fixed `backend/scripts/generate_evac_zones.py`: replaced single shared `SOUTH_FLOOR_LAT` with per-zone floors in the `EVAC_ZONES` list
+  - Order zone floor: **49.87** — sits 0.002° south of fire perimeter edge (49.8721), fully containing it
+  - Alert zone floor: **49.865** — extends slightly further south than order zone
+- Verified all 4 constraints programmatically: fire perimeter south tip inside both zones ✓, Royal LePage (49.8587) outside both zones ✓
+- Regenerated `evac_order_zone.geojson` and `evac_alert_zone.geojson`, synced to `frontend/public/`
+- Added null-safety for `route` in `BriefingCard.tsx` — wraps Route section in `{route && (...)}` matching existing shelter null-guard pattern
+
+### Decisions made
+- Per-zone floors instead of a shared constant — order and alert zones need different southern extents by design (alert extends slightly beyond order)
+- Floor values chosen tight against real geography: 49.87 is only ~150m south of where the fire perimeter actually ends, leaving a ~900m gap above Royal LePage (49.8587)
+
+### Next session
+- Phase 5: Admin view — SituationPanel, RoadPanel, ShelterPanel, SimControls, `/admin` route
+- Implement `POST /api/admin/simulate/advance`
+- Investigate blue dot user location layer (appeared to self-resolve, root cause unknown)
