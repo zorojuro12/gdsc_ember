@@ -44,3 +44,38 @@ export interface ProfileFlags {
   pets: boolean
   no_vehicle: boolean
 }
+
+export interface AdminShelter {
+  id: string
+  name: string
+  status: ShelterStatus
+  capacity_estimate: number
+  is_accessible: boolean
+  has_pet_area: boolean
+  has_medical_power: boolean
+}
+
+export interface AdminRoad {
+  road: string
+  status: string
+  lat: number
+  lng: number
+}
+
+export interface AdminSituationResponse {
+  fire: {
+    id: string
+    name: string
+    hectares: number
+    spread_rate: SpreadRate
+    wind: { speed_kmh: number; direction: string }
+    perimeter_url: string
+  }
+  evacuations: {
+    under_order: number
+    under_alert: number
+  }
+  roads: AdminRoad[]
+  shelters: AdminShelter[]
+  updated_at: string
+}
