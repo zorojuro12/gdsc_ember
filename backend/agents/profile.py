@@ -2,10 +2,12 @@
 Profile Agent — assembles structured payload from all three agents, then returns
 a plain-language briefing via one of three tiers:
 
-  Tier 1: Pre-generated LLM output from demo_briefing.json (demo mode, primary)
-  Tier 2: Template-composed briefing (demo mode, fallback for uncached flag combos)
-  Tier 3: Live Anthropic API call (live mode only)
+  Tier 1: Pre-generated LLM output from demo_briefing.json (demo mode only)
+  Tier 2: Template-composed briefing (fallback when LLM is unavailable)
+  Tier 3: Live Anthropic API call (when ANTHROPIC_API_KEY is set)
 """
+
+from __future__ import annotations
 
 import os
 
@@ -14,8 +16,8 @@ import cache
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
 
+# Maps a profile dict to one of the pre-generated briefing keys.
 def _flag_key(profile: dict) -> str:
-    """Map a profile dict to one of the pre-generated briefing keys."""
     if profile.get("mobility"):
         return "mobility"
     if profile.get("medical"):
@@ -27,8 +29,8 @@ def _flag_key(profile: dict) -> str:
     return "default"
 
 
+# Tier 2 — composes a briefing from structured data without calling the LLM.
 def _template_briefing(payload: dict) -> str:
-    """Tier 2 — compose a briefing from structured data without calling the LLM."""
     threat = payload.get("threat", {})
     route = payload.get("route", {})
     shelter = payload.get("shelter", {})
@@ -64,12 +66,13 @@ def _template_briefing(payload: dict) -> str:
         text += " If you need transportation assistance, call Emergency Support Services at 1-800-387-4258."
 
     if closures:
-        road_list = " and ".join(c["road"] for c in closures[:2])
+        road_list = " and ".join(c if isinstance(c, str) else c.get("road", "") for c in closures[:2])
         text += f" Avoid {road_list} — closed due to fire activity."
 
     return text
 
 
+# Builds the structured JSON payload for the LLM from all agent outputs.
 def _build_payload(threat: dict, route: dict, shelter_result: dict, profile: dict) -> dict:
     shelter = shelter_result.get("shelter") if shelter_result else None
     closures = route.get("closures", []) if route else []
@@ -94,13 +97,13 @@ def _build_payload(threat: dict, route: dict, shelter_result: dict, profile: dic
             "is_accessible": (shelter or {}).get("is_accessible", True),
             "has_pet_area": (shelter or {}).get("has_pet_area", False),
         },
-        "closures": [c["road"] + " — " + c["status"] for c in closures],
+        "closures": [c["road"] + " — " + c["status"] if isinstance(c, dict) else c for c in closures],
         "profile": profile,
     }
 
 
+# Calls Claude Sonnet to synthesize a plain-language briefing from structured data.
 async def _call_anthropic(payload: dict) -> str:
-    """Tier 3 — live Anthropic API call."""
     import anthropic
     import json
 
@@ -123,6 +126,7 @@ async def _call_anthropic(payload: dict) -> str:
     return message.content[0].text.strip()
 
 
+# Generates the evacuation briefing using the best available method.
 async def run(
     threat: dict,
     route: dict,
@@ -133,17 +137,19 @@ async def run(
     payload = _build_payload(threat, route, shelter_result, profile)
 
     if demo_mode:
-        # Tier 1: pre-generated briefing lookup
         briefing_data = cache.get("briefing:demo")
         if briefing_data:
             key = _flag_key(profile)
             text = briefing_data.get("briefings", {}).get(key)
             if text:
                 return {"briefing_text": text, "payload": payload}
-
-        # Tier 2: template fallback
         return {"briefing_text": _template_briefing(payload), "payload": payload}
 
-    # Tier 3: live API call
-    text = await _call_anthropic(payload)
-    return {"briefing_text": text, "payload": payload}
+    if ANTHROPIC_API_KEY:
+        try:
+            text = await _call_anthropic(payload)
+            return {"briefing_text": text, "payload": payload}
+        except Exception as e:
+            print(f"[profile] Anthropic API failed, falling back to template: {e}")
+
+    return {"briefing_text": _template_briefing(payload), "payload": payload}

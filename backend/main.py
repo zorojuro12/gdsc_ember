@@ -18,11 +18,11 @@ DEMO_MODE = os.getenv("DEMO_MODE", "true").lower() == "true"
 SCENARIO_DIR = os.path.join(os.path.dirname(__file__), "..", "data", "scenarios", "2023-west-kelowna")
 
 
+# Loads scenario files into cache on startup regardless of mode.
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    if DEMO_MODE:
-        from demo import load_demo_data
-        load_demo_data()
+    from demo import load_demo_data
+    load_demo_data()
     yield
 
 

@@ -56,18 +56,19 @@ Labels:
 
 ## Phase 4 — Resident View (Days 11-13)
 
-- [ ] 🟢 Top bar component `frontend/src/components/TopBar.tsx`: EMBER logo (text-based), evacuation status badge (ORDER/ALERT/WATCH with matching color)
-- [ ] 🟢 Address input bar component `frontend/src/components/AddressInput.tsx`: text input + GO button, calls `GET /api/briefing?address=...` on submit
-- [ ] 🟢 Profile flag toggles `frontend/src/components/ProfileFlags.tsx`: pill-shaped buttons for Mobility, Pets, Medical, No Vehicle — active state changes background color, toggles boolean state
-- [ ] 🟢 Alert banner component `frontend/src/components/AlertBanner.tsx`: appears at top when route changes, shows message like "Route updated — Westside Road now closed", auto-dismisses after 10 seconds
-- [ ] 🟢 Briefing card component `frontend/src/components/BriefingCard.tsx`: threat summary, route summary, shelter summary, road closure warnings, LLM briefing text, last updated timestamp
-- [ ] 🟢 Wire React Query polling: `useQuery` with `refetchInterval: 300000` (5 minutes) for `GET /api/briefing`
-- [ ] 🟢 Route polyline rendering: decode encoded polyline from API response, render as blue line on Mapbox map
-- [ ] 🟢 Profile flags persistence: save to `localStorage` key `ember_profile_flags`, load on mount
-- [ ] 🟡 Responsive layout: map 65% height + briefing card below on mobile, side-by-side on wide screens (breakpoint at 1024px). Think through: how does the map resize? Does the briefing card scroll independently? How does this look on a projector at 1920x1080?
-- [ ] 🟢 Loading state: skeleton cards while briefing is fetching
-- [ ] 🟢 Error state: friendly error message if API fails
-- [ ] 🟢 Git: full resident view working end-to-end with demo data — merge to dev
+- [x] 🟢 Top bar component `frontend/src/components/TopBar.tsx`: EMBER logo (text-based), evacuation status badge (ORDER/ALERT/WATCH with matching color)
+- [x] 🟢 Address input bar component `frontend/src/components/AddressInput.tsx`: text input + GO button, calls `GET /api/briefing?address=...` on submit
+- [x] 🟢 Profile flag toggles `frontend/src/components/ProfileFlags.tsx`: pill-shaped buttons for Mobility, Pets, Medical, No Vehicle — active state changes background color, toggles boolean state
+- [x] 🟢 Alert banner component `frontend/src/components/AlertBanner.tsx`: appears at top when route changes, shows message like "Route updated — Westside Road now closed", auto-dismisses after 10 seconds
+- [x] 🟢 Briefing card component `frontend/src/components/BriefingCard.tsx`: threat summary, route summary, shelter summary, road closure warnings, LLM briefing text, last updated timestamp
+- [x] 🟢 Wire React Query polling: `useQuery` with `refetchInterval: 300000` (5 minutes) for `GET /api/briefing`
+- [x] 🟢 Route polyline rendering: decode encoded polyline from API response, render as blue line on Mapbox map
+- [x] 🟢 Profile flags persistence: save to `localStorage` key `ember_profile_flags`, load on mount
+- [x] 🟡 Responsive layout: map 65% height + briefing card below on mobile, side-by-side on wide screens (breakpoint at 1024px). Think through: how does the map resize? Does the briefing card scroll independently? How does this look on a projector at 1920x1080?
+- [x] 🟢 Loading state: skeleton cards while briefing is fetching
+- [x] 🟢 Error state: friendly error message if API fails
+- [x] 🟢 Git: full resident view working end-to-end with demo data — merge to dev
+- [x] 🟡 Wire live Google Maps APIs (Geocoding, Directions, Places Autocomplete) + Anthropic API into agents with graceful fallback to demo data — `backend/geocode.py`, `backend/directions.py`, rewritten orchestrator + all 4 agents, `AddressInput.tsx` Places Autocomplete
 
 ## Phase 5 — Admin View (Days 14-16)
 
@@ -75,8 +76,8 @@ Labels:
 - [ ] 🟢 Situation summary panel `frontend/src/components/admin/SituationPanel.tsx`: metric cards for perimeter size (ha), wind speed/direction, spread rate classification, last refresh time, properties under order count, properties under alert count
 - [ ] 🟢 Road status panel `frontend/src/components/admin/RoadPanel.tsx`: list of road closures with color-coded badges — red (CLOSED), amber (ADVISORY), green (OPEN)
 - [ ] 🟢 Shelter panel `frontend/src/components/admin/ShelterPanel.tsx`: shelter rows with name, capacity, status badge, and inline override buttons (Open/Filling/Near Full)
-- [ ] 🟢 Implement `POST /api/admin/shelter/{id}/status` in `backend/main.py` — accepts `{ "status": "Filling" }`, updates in-memory shelter state, returns updated shelter
-- [ ] 🟢 Implement `POST /api/admin/simulate/closure` in `backend/main.py` — accepts `{ "closure_id": "closure_001" }`, activates the closure in the demo timeline, returns active closures list
+- [x] 🟢 Implement `POST /api/admin/shelter/{id}/status` in `backend/main.py` — accepts `{ "status": "Filling" }`, updates in-memory shelter state, returns updated shelter
+- [x] 🟢 Implement `POST /api/admin/simulate/closure` in `backend/main.py` — accepts `{ "closure_id": "closure_001" }`, activates the closure in the demo timeline, returns active closures list
 - [ ] 🟡 Implement `POST /api/admin/simulate/advance` in `backend/main.py` — accepts `{ "hours": 2 }`, advances demo clock, updates shelter statuses per timeline (T+2: Royal LePage → Filling, T+4: → Near Full), returns new time and timeline step. Think through: need a global demo_state object that tracks current_time and timeline_step. Advancing time should update shelter statuses, activate closures per the timeline in road_closures.json, and shift the fire perimeter to the projected spread. What resets when "Reset" is clicked?
 - [ ] 🟢 Simulation control buttons `frontend/src/components/admin/SimControls.tsx`: [Trigger Road Closure] dropdown, [Advance Time +2HR], [Load Scenario], [Reset]
 - [ ] 🟢 Demo Mode toggle switch + LIVE badge in admin top bar
@@ -86,7 +87,7 @@ Labels:
 ## Phase 6 — Polish & Demo (Days 17-18)
 
 - [ ] 🟢 Fire spread model refinement: asymmetric buffer based on wind direction from station 1277 data
-- [ ] 🟢 Pre-generate and cache the demo briefing output so LLM is never called live on stage — store in `/data/scenarios/2023-west-kelowna/demo_briefing.json`
+- [x] 🟢 Pre-generate and cache the demo briefing output so LLM is never called live on stage — store in `/data/scenarios/2023-west-kelowna/demo_briefing.json`
 - [ ] 🟢 Test Demo Mode fully offline: disconnect internet, verify all map layers load, verify briefing returns cached response
 - [ ] 🟢 Fix any visual bugs, loading states, edge cases
 - [ ] 🟢 Add loading spinner / skeleton screens for all async operations

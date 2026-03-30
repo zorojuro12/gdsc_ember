@@ -7,6 +7,8 @@ TTL = {
     "drivebc": 300,
     "weather": 900,
     "directions": 600,
+    "geocode": 3600,
+    "drivetime": 600,
 }
 
 
