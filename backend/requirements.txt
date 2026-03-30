@@ -1,6 +1,7 @@
 fastapi
 uvicorn[standard]
 shapely
+pyproj
 pandas
 anthropic
 httpx
