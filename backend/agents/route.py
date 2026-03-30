@@ -34,17 +34,19 @@ def _build_closures() -> list[dict]:
 
 
 # Returns the recommended evacuation route with active road closures.
-async def run(user_lat: float, user_lng: float, demo_mode: bool) -> dict:
+# top_shelter is the ranked shelter from shelter.py — route agent uses it
+# as the destination so the route and briefing card always agree.
+async def run(user_lat: float, user_lng: float, demo_mode: bool, top_shelter: dict = None) -> dict:
     closures = _build_closures()
 
     if not demo_mode:
         shelters_data = cache.get("shelters:all")
         if shelters_data:
-            top_shelter = shelters_data["shelters"][0]
+            dest = top_shelter if top_shelter else shelters_data["shelters"][0]
             avoid_roads = [c["road"] for c in closures]
             live_route = await directions.get_route(
                 user_lat, user_lng,
-                top_shelter["lat"], top_shelter["lng"],
+                dest["lat"], dest["lng"],
                 avoid_roads=avoid_roads,
             )
             if live_route:
@@ -61,6 +63,23 @@ async def run(user_lat: float, user_lng: float, demo_mode: bool) -> dict:
     if route_data:
         primary = route_data["primary"]
         fallback = route_data["fallback"]
+
+        # If shelter agent picked a non-default shelter, use its drive time from
+        # the pre-computed table but clear the polyline (no hardcoded route exists
+        # for that shelter). The briefing card and shelter card will still match.
+        default_shelter_id = "shelter_001"
+        if top_shelter and top_shelter.get("id") != default_shelter_id:
+            drive_times = route_data.get("shelter_drive_times", {})
+            duration = drive_times.get(top_shelter["id"], 60)
+            return {
+                "summary": f"Route to {top_shelter['name']}",
+                "distance_km": None,
+                "duration_min": duration,
+                "polyline": "",
+                "fallback_summary": fallback["summary"],
+                "closures": closures,
+            }
+
         return {
             "summary": primary["summary"],
             "distance_km": primary["distance_km"],

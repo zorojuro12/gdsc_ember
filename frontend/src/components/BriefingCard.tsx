@@ -102,7 +102,7 @@ export default function BriefingCard({
         <SectionLabel>Route</SectionLabel>
         <p className="text-white text-sm font-medium">{route.summary}</p>
         <p className="text-gray-400 text-sm mt-0.5">
-          {route.distance_km} km &middot; {route.duration_min} min
+          {route.distance_km != null ? `${route.distance_km} km · ` : ''}{route.duration_min} min
         </p>
         <p className="text-gray-500 text-xs mt-1">Fallback: {route.fallback_summary}</p>
       </div>

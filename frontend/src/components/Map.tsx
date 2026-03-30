@@ -441,6 +441,9 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
           shelters: (await shel.json()) as MapData['shelters'],
         }
         addAllLayers(map, mapData)
+        // Apply any prop data that arrived before the map finished loading
+        if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
+        if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
       })()
     })
 

@@ -31,11 +31,15 @@ async def run_briefing(address: str, profile_flags: dict, demo_mode: bool) -> di
         except Exception:
             return None
 
-    threat_result, route_result, shelter_result = await asyncio.gather(
+    # Run threat + shelter in parallel first so we know the top shelter
+    # before calling the route agent (which needs the destination).
+    threat_result, shelter_result = await asyncio.gather(
         _safe(threat.run(user_lat, user_lng, demo_mode)),
-        _safe(route.run(user_lat, user_lng, demo_mode)),
         _safe(shelter.run(user_lat, user_lng, profile_flags, demo_mode)),
     )
+
+    top_shelter = shelter_result.get("shelter") if shelter_result else None
+    route_result = await _safe(route.run(user_lat, user_lng, demo_mode, top_shelter=top_shelter))
 
     profile_result = await profile.run(
         threat_result, route_result, shelter_result, profile_flags, demo_mode
