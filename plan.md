@@ -78,9 +78,9 @@ Labels:
 - [x] 🟢 Shelter panel `frontend/src/components/admin/ShelterPanel.tsx`: shelter rows with name, capacity, status badge, and inline override buttons (Open/Filling/Near Full)
 - [x] 🟢 Implement `POST /api/admin/shelter/{id}/status` in `backend/main.py` — accepts `{ "status": "Filling" }`, updates in-memory shelter state, returns updated shelter
 - [x] 🟢 Implement `POST /api/admin/simulate/closure` in `backend/main.py` — accepts `{ "closure_id": "closure_001" }`, activates the closure in the demo timeline, returns active closures list
-- [ ] 🟡 Implement `POST /api/admin/simulate/advance` in `backend/main.py` — accepts `{ "hours": 2 }`, advances demo clock, updates shelter statuses per timeline (T+2: Royal LePage → Filling, T+4: → Near Full), returns new time and timeline step. Think through: need a global demo_state object that tracks current_time and timeline_step. Advancing time should update shelter statuses, activate closures per the timeline in road_closures.json, and shift the fire perimeter to the projected spread. What resets when "Reset" is clicked?
-- [ ] 🟢 Simulation control buttons `frontend/src/components/admin/SimControls.tsx`: [Trigger Road Closure] dropdown, [Advance Time +2HR], [Load Scenario], [Reset]
-- [ ] 🟢 Demo Mode toggle switch + LIVE badge in admin top bar
+- [x] 🟡 Implement `POST /api/admin/simulate/advance` in `backend/main.py` — advances demo clock one step at a time through 4 hardcoded timeline milestones, updates shelter statuses and closures per step, capped at last step. Also added `POST /api/admin/simulate/reset`. Weather lookup now uses sim hour from current_time.
+- [x] 🟢 Simulation control buttons `frontend/src/components/admin/SimControls.tsx`: closure dropdown (inactive only), [Advance to Next Step] (disabled at last step), [Reset], current sim time display
+- [x] 🟢 Demo Mode toggle switch + LIVE badge in admin top bar
 - [ ] 🟢 Census vulnerability overlay (stretch goal): DA-level 65+ choropleth from GeoJSON, rendered as dashed purple regions on admin map
 - [ ] 🟢 Git: full admin view working with simulation controls — merge to dev
 

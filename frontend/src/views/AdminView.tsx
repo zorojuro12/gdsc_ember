@@ -6,12 +6,14 @@ import RoadPanel from '../components/admin/RoadPanel'
 import ShelterPanel from '../components/admin/ShelterPanel'
 import SimControls from '../components/admin/SimControls'
 import { useAdminSituation } from '../hooks/useAdminSituation'
+import { useAppConfig } from '../contexts/AppConfigContext'
 import { API_BASE } from '../lib/api'
 import type { AdminShelter } from '../types'
 
 export default function AdminView() {
   const queryClient = useQueryClient()
   const { data, isLoading } = useAdminSituation()
+  const config = useAppConfig()
 
   async function handleStatusChange(id: string, status: AdminShelter['status']) {
     await fetch(`${API_BASE}/api/admin/shelter/${id}/status`, {
@@ -31,12 +33,8 @@ export default function AdminView() {
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
   }
 
-  async function handleAdvanceTime(hours: number) {
-    await fetch(`${API_BASE}/api/admin/simulate/advance`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ hours }),
-    })
+  async function handleAdvanceTime() {
+    await fetch(`${API_BASE}/api/admin/simulate/advance`, { method: 'POST' })
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
   }
 
@@ -45,6 +43,8 @@ export default function AdminView() {
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
   }
 
+  const isDemo = config?.demoMode ?? true
+
   return (
     <div className="w-full h-screen bg-gray-950 flex flex-col">
       {/* Admin header */}
@@ -52,11 +52,17 @@ export default function AdminView() {
         <div className="flex items-center gap-3">
           <span className="text-white font-bold text-lg tracking-widest">EMBER</span>
           <span className="text-gray-500 text-sm">Admin Dashboard</span>
+          {isDemo ? (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-gray-700 text-gray-400 uppercase tracking-wider">
+              Demo
+            </span>
+          ) : (
+            <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-red-600 text-white uppercase tracking-wider animate-pulse">
+              Live
+            </span>
+          )}
         </div>
-        <Link
-          to="/"
-          className="text-gray-400 text-sm hover:text-white transition-colors"
-        >
+        <Link to="/" className="text-gray-400 text-sm hover:text-white transition-colors">
           ← Resident View
         </Link>
       </div>
@@ -78,6 +84,10 @@ export default function AdminView() {
             onStatusChange={handleStatusChange}
           />
           <SimControls
+            timelineStep={data?.timeline_step ?? 1}
+            maxStep={data?.max_step ?? 4}
+            currentTime={data?.updated_at ?? ''}
+            activeClosures={data?.active_closure_ids ?? []}
             onAdvanceTime={handleAdvanceTime}
             onTriggerClosure={handleTriggerClosure}
             onReset={handleReset}

@@ -78,4 +78,7 @@ export interface AdminSituationResponse {
   roads: AdminRoad[]
   shelters: AdminShelter[]
   updated_at: string
+  timeline_step: number
+  max_step: number
+  active_closure_ids: string[]
 }

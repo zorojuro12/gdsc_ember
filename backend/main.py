@@ -99,11 +99,16 @@ async def get_situation():
     closures_data = cache.get("drivebc:closures") or {}
     weather_data = cache.get("weather:1277") or {}
 
-    # Aug 17 7PM weather snapshot
+    # Look up wind from the weather CSV at the hour matching current sim time.
     wind = {"speed_kmh": 42, "direction": "NE"}
+    current_time_str = state.get("current_time", "")
+    try:
+        sim_hour = datetime.fromisoformat(current_time_str).hour
+    except (ValueError, TypeError):
+        sim_hour = 19
     hourly = weather_data.get("hourly", [])
     for entry in hourly:
-        if entry.get("date") == "2023-08-17" and entry.get("hour") == 19:
+        if entry.get("date") == "2023-08-17" and entry.get("hour") == sim_hour:
             spd = entry.get("wind_speed_kmh")
             deg = entry.get("wind_direction_deg", 0)
             if spd is not None:
@@ -138,6 +143,8 @@ async def get_situation():
         for s in shelters_data.get("shelters", [])
     ]
 
+    evacuations = state.get("evacuations", {"under_order": 2462, "under_alert": 4801})
+
     return {
         "fire": {
             "id": "K52767",
@@ -147,13 +154,13 @@ async def get_situation():
             "wind": wind,
             "perimeter_url": "/static/mcdougall_creek_perimeter.geojson",
         },
-        "evacuations": {
-            "under_order": 2462,
-            "under_alert": 4801,
-        },
+        "evacuations": evacuations,
         "roads": roads,
         "shelters": shelters_out,
         "updated_at": state.get("current_time"),
+        "timeline_step": state.get("timeline_step", 1),
+        "max_step": demo_state.MAX_STEP,
+        "active_closure_ids": active_ids,
     }
 
 
@@ -187,6 +194,21 @@ async def simulate_closure(body: dict):
 
 
 @app.post("/api/admin/simulate/advance")
-async def simulate_advance(body: dict):
-    # Implemented in Phase 5
-    return {"detail": "not implemented"}
+async def simulate_advance():
+    state = demo_state.advance_time()
+    return {
+        "current_time": state["current_time"],
+        "timeline_step": state["timeline_step"],
+        "max_step": demo_state.MAX_STEP,
+    }
+
+
+@app.post("/api/admin/simulate/reset")
+async def simulate_reset():
+    demo_state.reset()
+    state = demo_state.get_state()
+    return {
+        "current_time": state["current_time"],
+        "timeline_step": state["timeline_step"],
+        "max_step": demo_state.MAX_STEP,
+    }
