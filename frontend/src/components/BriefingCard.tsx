@@ -105,6 +105,7 @@ export default function BriefingCard({
       </div>
 
       {/* Shelter */}
+      {shelter && (
       <div className="p-4">
         <SectionLabel>Shelter</SectionLabel>
         <div className="flex items-center justify-between mb-0.5">
@@ -119,6 +120,7 @@ export default function BriefingCard({
           {shelter.has_pet_area && <span>Pet-friendly</span>}
         </div>
       </div>
+      )}
 
       {/* Road closures */}
       {closures.length > 0 && (

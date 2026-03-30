@@ -311,10 +311,55 @@ const STYLES = {
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
 } as const
 
-export default function Map({ routePolyline = null }: { routePolyline?: string | null }) {
+// Adds or updates the user location blue dot on the map (always on top).
+function updateUserLocation(map: mapboxgl.Map, location: { lat: number; lng: number } | null) {
+  const data: GeoJSON.FeatureCollection = {
+    type: 'FeatureCollection',
+    features: location
+      ? [{ type: 'Feature', geometry: { type: 'Point', coordinates: [location.lng, location.lat] }, properties: {} }]
+      : [],
+  }
+  const existing = map.getSource('user-location') as mapboxgl.GeoJSONSource | undefined
+  if (existing) {
+    existing.setData(data)
+    if (map.getLayer('user-location-glow')) map.moveLayer('user-location-glow')
+    if (map.getLayer('user-location-dot')) map.moveLayer('user-location-dot')
+  } else {
+    map.addSource('user-location', { type: 'geojson', data })
+    map.addLayer({
+      id: 'user-location-glow',
+      type: 'circle',
+      source: 'user-location',
+      paint: {
+        'circle-radius': 18,
+        'circle-color': '#3B82F6',
+        'circle-opacity': 0.25,
+      },
+    })
+    map.addLayer({
+      id: 'user-location-dot',
+      type: 'circle',
+      source: 'user-location',
+      paint: {
+        'circle-radius': 8,
+        'circle-color': '#3B82F6',
+        'circle-stroke-width': 3,
+        'circle-stroke-color': '#ffffff',
+      },
+    })
+  }
+}
+
+type MapProps = {
+  routePolyline?: string | null
+  userLocation?: { lat: number; lng: number } | null
+}
+
+export default function Map({ routePolyline = null, userLocation = null }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const routePolylineRef = useRef<string | null>(null)
+  const userLocationRef = useRef<{ lat: number; lng: number } | null>(null)
   const [satellite, setSatellite] = useState(false)
 
   useEffect(() => {
@@ -364,6 +409,7 @@ export default function Map({ routePolyline = null }: { routePolyline?: string |
       if (!initialLoadComplete || !mapData) return
       addAllLayers(map, mapData)
       if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
+      if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
     })
 
     return () => {
@@ -379,6 +425,17 @@ export default function Map({ routePolyline = null }: { routePolyline?: string |
     if (!map || !map.isStyleLoaded()) return
     updateRouteLayer(map, routePolyline)
   }, [routePolyline])
+
+  // Update the user location dot and fly to it whenever the location prop changes
+  useEffect(() => {
+    userLocationRef.current = userLocation
+    const map = mapRef.current
+    if (!map || !map.isStyleLoaded()) return
+    updateUserLocation(map, userLocation)
+    if (userLocation) {
+      map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 13, duration: 1500 })
+    }
+  }, [userLocation])
 
   const handleStyleToggle = useCallback(() => {
     if (!mapRef.current) return

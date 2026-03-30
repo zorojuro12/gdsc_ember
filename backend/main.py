@@ -82,6 +82,7 @@ async def get_briefing(
         "shelter": result.get("shelter"),
         "closures": result.get("closures", []),
         "briefing_text": result.get("briefing_text", ""),
+        "user_location": result.get("user_location"),
         "fire_perimeter_geojson": "/static/mcdougall_creek_perimeter.geojson",
         "projections_geojson": [
             "/static/spread_2hr.geojson",

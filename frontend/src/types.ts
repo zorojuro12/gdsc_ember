@@ -33,6 +33,7 @@ export interface BriefingResponse {
     lng: number
   }>
   briefing_text: string
+  user_location?: { lat: number; lng: number }
   fire_perimeter_geojson: string
   projections_geojson: string[]
 }

@@ -12,7 +12,6 @@ import httpx
 
 import cache
 
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
 DIRECTIONS_URL = "https://maps.googleapis.com/maps/api/directions/json"
 
 
@@ -29,14 +28,15 @@ async def get_route(
     if cached:
         return cached
 
-    if not GOOGLE_MAPS_API_KEY:
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    if not api_key:
         return None
 
     try:
         params: dict = {
             "origin": f"{origin_lat},{origin_lng}",
             "destination": f"{dest_lat},{dest_lng}",
-            "key": GOOGLE_MAPS_API_KEY,
+            "key": api_key,
             "mode": "driving",
         }
 
@@ -75,14 +75,15 @@ async def get_drive_time(
     if cached is not None:
         return cached
 
-    if not GOOGLE_MAPS_API_KEY:
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    if not api_key:
         return None
 
     try:
         params = {
             "origin": f"{origin_lat},{origin_lng}",
             "destination": f"{dest_lat},{dest_lng}",
-            "key": GOOGLE_MAPS_API_KEY,
+            "key": api_key,
             "mode": "driving",
         }
 

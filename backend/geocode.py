@@ -12,7 +12,6 @@ import httpx
 
 import cache
 
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY", "")
 GEOCODE_URL = "https://maps.googleapis.com/maps/api/geocode/json"
 
 
@@ -23,14 +22,15 @@ async def geocode(address: str) -> tuple[float, float] | None:
     if cached:
         return (cached["lat"], cached["lng"])
 
-    if not GOOGLE_MAPS_API_KEY:
+    api_key = os.getenv("GOOGLE_MAPS_API_KEY", "")
+    if not api_key:
         return None
 
     try:
         async with httpx.AsyncClient(timeout=3.0) as client:
             resp = await client.get(
                 GEOCODE_URL,
-                params={"address": address, "key": GOOGLE_MAPS_API_KEY},
+                params={"address": address, "key": api_key},
             )
             data = resp.json()
 

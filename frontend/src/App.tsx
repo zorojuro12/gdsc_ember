@@ -72,7 +72,7 @@ export default function App() {
       <div className="flex flex-col lg:flex-row lg:flex-1 lg:overflow-hidden">
         {/* Map — left column on desktop, full width on mobile */}
         <div className="lg:flex-1 lg:overflow-hidden">
-          <Map routePolyline={data?.route?.polyline ?? null} />
+          <Map routePolyline={data?.route?.polyline ?? null} userLocation={data?.user_location ?? null} />
         </div>
         {/* Right panel — below map on mobile, sidebar on desktop */}
         <div className="lg:w-[380px] lg:overflow-y-auto lg:border-l lg:border-gray-800 p-4 space-y-4">

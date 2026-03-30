@@ -27,7 +27,7 @@ async def run_briefing(address: str, profile_flags: dict, demo_mode: bool) -> di
 
     async def _safe(coro):
         try:
-            return await asyncio.wait_for(coro, timeout=3.0)
+            return await asyncio.wait_for(coro, timeout=10.0)
         except Exception:
             return None
 
@@ -47,4 +47,5 @@ async def run_briefing(address: str, profile_flags: dict, demo_mode: bool) -> di
         "shelter": shelter_result.get("shelter") if shelter_result else None,
         "briefing_text": profile_result.get("briefing_text", ""),
         "closures": (route_result or {}).get("closures", []),
+        "user_location": {"lat": user_lat, "lng": user_lng},
     }

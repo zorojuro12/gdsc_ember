@@ -13,7 +13,8 @@ import os
 
 import cache
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
+
+# Read at call time — see run() and _call_anthropic()
 
 
 # Maps a profile dict to one of the pre-generated briefing keys.
@@ -107,7 +108,8 @@ async def _call_anthropic(payload: dict) -> str:
     import anthropic
     import json
 
-    client = anthropic.AsyncAnthropic(api_key=ANTHROPIC_API_KEY)
+    api_key = os.getenv("ANTHROPIC_API_KEY", "")
+    client = anthropic.AsyncAnthropic(api_key=api_key)
     system = (
         "You are EMBER, an emergency evacuation assistant for BC wildfire emergencies. "
         "Given structured data about a resident's situation, generate a 3-4 sentence "
@@ -145,7 +147,7 @@ async def run(
                 return {"briefing_text": text, "payload": payload}
         return {"briefing_text": _template_briefing(payload), "payload": payload}
 
-    if ANTHROPIC_API_KEY:
+    if os.getenv("ANTHROPIC_API_KEY", ""):
         try:
             text = await _call_anthropic(payload)
             return {"briefing_text": text, "payload": payload}
