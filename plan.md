@@ -34,10 +34,10 @@ Labels:
 - [x] 🟢 Road closure layer: render lines from `road_closures.json` `coordinates_from`/`coordinates_to` as thick red dashed lines on map
 - [x] 🟢 Shelter pins layer: render markers from `shelters.json` lat/lng with color-coded status — green circle (Open), amber circle (Filling), red circle (Near Full)
 - [x] 🟢 Fire spread projection rings: render `spread_2hr.geojson`, `spread_4hr.geojson`, `spread_6hr.geojson` as translucent orange overlays with decreasing opacity (+2hr=0.3, +4hr=0.2, +6hr=0.1)
-- [ ] 🟡 Pre-compute spread GeoJSON files using Shapely `buffer()` on `mcdougall_creek_perimeter.geojson` — script in `backend/scripts/generate_spread.py`. Think through: what buffer distances for 2/4/6hr? How to read ISI from weather CSV to calculate spread rate? Does the perimeter GeoJSON need reprojection for Shapely buffer to work in meters?
-- [ ] 🟢 Wind vector arrows: render wind direction/speed from weather CSV data as arrow markers on map near station 1277 location
-- [ ] 🟢 Map legend component in `frontend/src/components/MapLegend.tsx` — color key for all layers
-- [ ] 🟢 Satellite/street map style toggle button on map
+- [x] 🟡 Pre-compute spread GeoJSON files using Shapely `buffer()` on `mcdougall_creek_perimeter.geojson` — script in `backend/scripts/generate_spread.py`. Think through: what buffer distances for 2/4/6hr? How to read ISI from weather CSV to calculate spread rate? Does the perimeter GeoJSON need reprojection for Shapely buffer to work in meters?
+- [x] 🟢 Wind vector arrows: render wind direction/speed from weather CSV data as arrow markers on map near station 1277 location
+- [x] 🟢 Map legend component in `frontend/src/components/MapLegend.tsx` — color key for all layers
+- [x] 🟢 Satellite/street map style toggle button on map
 - [ ] 🟢 Git: all layers rendering from static JSON — merge to dev
 
 ## Phase 3 — Backend & Agents (Days 7-10)
