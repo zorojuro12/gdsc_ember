@@ -1,6 +1,29 @@
 # EMBER session log
 
-## Last session: Day 16 — Phase 5 Admin View complete
+## Last session: Day 17 — Shelter geography bug fix
+
+### What was done
+- Fixed critical shelter ranking bug: north Westside Rd users were being recommended Prospera Place (Kelowna, through fire) instead of Kal Tire Place (Vernon, north and safe)
+- Root cause: shelter.py used haversine drive-time estimates for non-default users, which ranked Prospera at ~15 min vs Kal Tire at ~62 min, ignoring that the Prospera route goes through the active fire perimeter
+- **Fix**: Added Shapely path-intersection penalty in `shelter.py` — if the straight-line user→shelter path overlaps the fire polygon by >0.03 degrees (~3 km), add +200 min effective-time penalty. Loads `fire_perimeter:K52767` from cache at run time.
+- **Result**: North user now correctly gets Kal Tire (eff=122 min) over Prospera (eff=275 min); default user still gets Royal LePage (eff=8 min) with Kal Tire heavily penalised (eff=385 min, path goes north through fire)
+- Also added haversine fallback for demo mode (when user ≠ default address) and closure-corridor blocking (+60 min per active closure geometrically between user and shelter)
+- Fixed shelter/route mismatch: orchestrator now runs threat+shelter in parallel first, then passes `top_shelter` to route agent so both cards always show the same shelter
+- Fixed `distance_km = None` crash in BriefingCard when route agent returns null distance for non-default shelters in demo mode
+
+### Decisions made
+- Used fire polygon intersection length (coordinate degrees) with binary threshold (>0.03 = danger) rather than proportional penalty — cleaner separation between "skims the edge" (Kal Tire: 0.027) and "cuts through fire" (Prospera: 0.034)
+- Closure-corridor blocking uses simple lat-interval + lng-proximity check (`lng_threshold=0.08`) — good enough for demo, no road network data needed
+- Fire perimeter hardcoded as `fire_perimeter:K52767` (demo-only scenario, acceptable for hackathon)
+
+### Known issues / next steps
+- Blue dot (user location on map) still not rendering — deferred
+- Phase 5 git merge to main pending (after demo mode test)
+- Phase 6: offline test, polish, responsive layout check, deployment
+
+---
+
+## Previous: Day 16 — Phase 5 Admin View complete
 
 ### What was done
 - Added layer toggle panel to `Map.tsx` — "Layers" button opens a panel with checkboxes for Spread Projections, Evac Zones, Road Closures, Shelters. Uses `setLayoutProperty(..., 'visibility', ...)`. State stored in `layerVisRef` so it survives satellite style reloads.
