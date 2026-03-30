@@ -1,6 +1,42 @@
 # EMBER session log
 
-## Last session: Day 14 — Wire live Google Maps + Anthropic APIs
+## Last session: Day 14 (continued) — Live API testing + bug fixes
+
+### What was done
+- Added real API keys to `backend/.env` and `frontend/.env`
+- Fixed critical bug: `os.getenv()` was called at module import time (before `load_dotenv()` ran in `main.py`), so API keys were always empty — moved all env var reads to call time in `geocode.py`, `directions.py`, `profile.py`
+- Increased orchestrator agent timeout from 3s to 10s — shelter agent's 5 parallel Directions API calls were exceeding the old limit and returning `None`
+- Added null-safety for `shelter` in `BriefingCard.tsx` — page was crashing with "Cannot read properties of null (reading 'name')" when shelter timed out
+- Added `user_location` field to `/api/briefing` response — returns geocoded `{lat, lng}` from orchestrator
+- Added `updateUserLocation()` to `Map.tsx` with blue dot + glow layers and `flyTo()` on address change — code is wired but dot not rendering yet (known issue, needs debugging)
+- Updated README with full architecture, env var table, fallback safety table, and correct project structure
+
+### Tested with live APIs
+- Google Geocoding: resolves "1240 Marble Terrace, West Kelowna, BC" to (49.863612, -119.5644584)
+- Google Directions: returns real route "BC-97 N and Boucherie Rd" with full encoded polyline (302 chars vs 80-char demo)
+- Anthropic Claude Sonnet: generates fresh briefing — "LEAVE NOW. The fire is 1.6 km away..." — dynamic, urgent, uses real computed data
+- Route polyline renders correctly on Mapbox map
+- Shelter ranking works with real drive times from Directions API
+- Address autocomplete dropdown appears when typing (Google Places API)
+
+### Bugs found and fixed
+- Env var load order: `load_dotenv()` in `main.py` runs after module-level `os.getenv()` in imported modules → keys always empty
+- 3-second timeout too tight for 5 parallel Directions API calls → shelter agent returning None → BriefingCard crash
+- `BriefingCard.tsx` accessing `shelter.name` without null check
+
+### Known issues
+- Blue dot for user location not rendering on map — `updateUserLocation()` code exists in `Map.tsx` but the layer doesn't appear visually. Likely a Mapbox layer ordering or React effect timing issue. Low priority — everything else works.
+- Google Places Autocomplete deprecation warning in console (use `PlaceAutocompleteElement` instead) — functional but should migrate eventually
+
+### Next session
+- Debug blue dot rendering on map (check if useEffect fires, check layer z-order)
+- Phase 5: Admin View frontend (SituationPanel, RoadPanel, ShelterPanel, SimControls)
+- Implement `POST /api/admin/simulate/advance` — advance demo timeline
+- Push to origin
+
+---
+
+## Previous: Day 14 — Wire live Google Maps + Anthropic APIs
 
 ### What was done
 - Created `backend/geocode.py` — Google Geocoding API wrapper; converts address to (lat, lng) with in-memory caching, returns None on failure
