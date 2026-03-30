@@ -5,14 +5,15 @@ Pure Python implementation (no external deps). Steps:
   1. Load perimeter vertices and compute convex hull (Andrew's monotone chain).
   2. Radially expand each hull vertex outward from centroid by buffer distance,
      adjusting for lat/lng degree scaling at 49.86° N.
-  3. Apply a southern latitude floor — prevents zones extending into the city
-     shelter area south of West Kelowna.
-  4. Apply an eastern longitude ceiling — prevents zones crossing Okanagan Lake
-     into Kelowna. Western lakeshore runs ~lng -119.505 in the relevant area.
+  3. Apply a southern latitude floor — prevents zones extending south into the
+     city shelter area.
+  4. Apply an eastern lakeshore boundary — prevents zones crossing Okanagan Lake
+     into Kelowna. The boundary is defined by waypoints along the western shore
+     of the lake; the max longitude at any latitude is interpolated from these.
 
-Buffer distances:
-  - evac_order_zone: 3 km, south floor 49.87,  east ceiling -119.505
-  - evac_alert_zone: 6 km, south floor 49.865, east ceiling -119.505
+Eastern boundary waypoints (western shore of Okanagan Lake, south to north):
+  (49.937021, -119.500331)  — Bear Creek / southern lakeshore
+  (49.988060, -119.488148)  — Wilson Landing area
 
 Run from repo root:
     python3 backend/scripts/generate_evac_zones.py
@@ -25,23 +26,23 @@ from pathlib import Path
 SCENARIO_DIR = Path(__file__).parents[2] / "data" / "scenarios" / "2023-west-kelowna"
 PERIMETER_FILE = SCENARIO_DIR / "mcdougall_creek_perimeter.geojson"
 
-# West Kelowna latitude — used to scale lng degrees to km
 LAT_REF = 49.86
 KM_PER_DEG_LAT = 111.0
 KM_PER_DEG_LNG = 111.0 * math.cos(math.radians(LAT_REF))  # ≈ 71.3 km/deg
 
-# (filename, buffer_km, label, south_floor_lat, east_ceiling_lng)
-#
-# South floors — fire perimeter south edge: 49.8721, Royal LePage: 49.8587
-#   Order floor 49.87  → fire perimeter just contained, Royal LePage excluded
-#   Alert floor 49.865 → extends slightly further south, still excludes Royal LePage
-#
-# East ceilings — Okanagan Lake western shore: ~lng -119.505
-#   Both zones clipped here so neither crosses the lake into Kelowna.
-#   Salvation Army: -119.4835, Prospera: -119.4963 — both east of -119.505 → excluded.
+# Waypoints along the western shore of Okanagan Lake (lat, lng), south to north.
+# The eastern boundary of both evac zones is interpolated through these points
+# so the zones follow the lakeshore shape rather than a flat vertical line.
+LAKE_SHORE_WAYPOINTS = [
+    (49.937021, -119.500331),  # Bear Creek / southern lakeshore
+    (49.988060, -119.488148),  # Wilson Landing area
+]
+
+# (filename, buffer_km, label, south_floor_lat)
+# East boundary is shared — both zones stop at the lakeshore waypoints.
 EVAC_ZONES = [
-    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone", 49.87,  -119.505),
-    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone", 49.865, -119.505),
+    ("evac_order_zone.geojson", 3.0, "Evacuation Order Zone", 49.87),
+    ("evac_alert_zone.geojson", 6.0, "Evacuation Alert Zone", 49.865),
 ]
 
 
@@ -112,11 +113,30 @@ def apply_south_floor(coords, floor_lat):
     return [[lng, max(lat, floor_lat)] for lng, lat in coords]
 
 
-def apply_east_ceiling(coords, ceiling_lng):
-    """Clip vertices east of ceiling_lng back to ceiling_lng.
-    Prevents the zone from crossing Okanagan Lake into Kelowna.
+def _east_limit_at_lat(lat, waypoints):
+    """Interpolate (or extrapolate) the max longitude at a given latitude
+    from the lakeshore waypoints, which are sorted south to north.
     """
-    return [[min(lng, ceiling_lng), lat] for lng, lat in coords]
+    if lat <= waypoints[0][0]:
+        return waypoints[0][1]
+    if lat >= waypoints[-1][0]:
+        return waypoints[-1][1]
+    for i in range(len(waypoints) - 1):
+        lat0, lng0 = waypoints[i]
+        lat1, lng1 = waypoints[i + 1]
+        if lat0 <= lat <= lat1:
+            t = (lat - lat0) / (lat1 - lat0)
+            return lng0 + t * (lng1 - lng0)
+    return waypoints[-1][1]
+
+
+def apply_east_boundary(coords, waypoints):
+    """Clip each vertex to the interpolated lakeshore longitude at its latitude.
+    Produces a curved eastern edge that follows the western shore of Okanagan Lake
+    rather than a flat vertical line.
+    """
+    sorted_wp = sorted(waypoints, key=lambda p: p[0])
+    return [[min(lng, _east_limit_at_lat(lat, sorted_wp)), lat] for lng, lat in coords]
 
 
 def make_feature_collection(coords, label: str) -> dict:
@@ -126,10 +146,7 @@ def make_feature_collection(coords, label: str) -> dict:
         "features": [
             {
                 "type": "Feature",
-                "geometry": {
-                    "type": "Polygon",
-                    "coordinates": [ring],
-                },
+                "geometry": {"type": "Polygon", "coordinates": [ring]},
                 "properties": {"label": label},
             }
         ],
@@ -147,16 +164,16 @@ def main():
     hull_cx, hull_cy = centroid(hull)
     print(f"  Hull centroid: lat={hull_cy:.4f}, lng={hull_cx:.4f}")
 
-    for filename, buffer_km, label, south_floor, east_ceiling in EVAC_ZONES:
+    for filename, buffer_km, label, south_floor in EVAC_ZONES:
         expanded = expand_polygon(hull, buffer_km)
         clipped = apply_south_floor(expanded, south_floor)
-        clipped = apply_east_ceiling(clipped, east_ceiling)
+        clipped = apply_east_boundary(clipped, LAKE_SHORE_WAYPOINTS)
         out_path = SCENARIO_DIR / filename
         with open(out_path, "w") as f:
             json.dump(make_feature_collection(clipped, label), f)
         lats = [c[1] for c in clipped]
         lngs = [c[0] for c in clipped]
-        print(f"  {filename}: {buffer_km}km buffer, south≥{south_floor}, east≤{east_ceiling} "
+        print(f"  {filename}: {buffer_km}km buffer, south≥{south_floor}, east≤lakeshore "
               f"→ lat [{min(lats):.4f},{max(lats):.4f}] lng [{min(lngs):.4f},{max(lngs):.4f}]")
 
     print("Done.")
