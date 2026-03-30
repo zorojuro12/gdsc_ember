@@ -370,8 +370,7 @@ export default function Map() {
   }
 
   return (
-    <div className="relative w-full h-[65vh]">
-      <div ref={containerRef} className="absolute inset-0" />
+    <div ref={containerRef} className="relative w-full h-[65vh]">
       <MapLegend />
       <button
         onClick={handleStyleToggle}
