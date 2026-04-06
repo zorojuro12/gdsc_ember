@@ -1,6 +1,48 @@
 # EMBER session log
 
-## Last session: Day 17 — Shelter geography bug fix
+## Last session: Day 18 — Road closure geometry, blue dot fix, demo address, fire pulse
+
+### What was done
+
+**Road closure snapping (all 4 closures)**
+- Expanded `SNAPPED_CLOSURE_IDS` in `Map.tsx` from pilot (closure_001) to all 4 closures
+- Updated `snap_closures_to_roads.py`: added `call_directions()` function using Mapbox Directions API for 2-point endpoint overrides; Map Matching used for multi-point traces, Directions used when override has exactly 2 waypoints (Map Matching returns 422 on sparse 2-point traces spanning >a few km)
+- Added `radiuses=50` per-point parameter to Map Matching calls — default 5m snap radius was silently dropping hand-traced waypoints
+- `CLOSURE_OVERRIDES` dict: closure_001 (Westside Road) and closure_004 (Bear Creek Road) use user-provided GPS coordinates for start/end; closure_002 (Hwy 97) and closure_003 (Rose Valley) use Map Matching on existing waypoints
+- Regenerated `road_closures_geometry.geojson`: closure_001 = 25.73km via Directions, closure_002 = 12.67km via Matching, closure_003 = 3.55km via Matching, closure_004 = 1.88km via Directions
+- `closureFeatures` in `Map.tsx` now filters out snapped IDs so they don't double-render as waypoint dots
+- Added `road-closures-snapped` source + `road-closures-snapped-line` + `road-closures-snapped-labels` layers; all 4 IDs added to `LAYER_GROUPS.closures`
+
+**Blue dot z-order fix**
+- Root cause: user-location source/layers were created dynamically in `updateUserLocation()` — timing race meant they could land beneath fire/evac/closure layers depending on when briefing data arrived
+- Fix: moved user-location source + glow + dot layer creation into `addAllLayers()` at the very end (after wind layers), initialised with empty FeatureCollection — guarantees top z-position
+- `updateUserLocation()` simplified to only `setData` + unconditional `moveLayer` calls (no more layer creation logic)
+- Bumped dot radius 8→9, glow radius 18→20, glow opacity 0.25→0.3
+
+**Demo address update (1598 Westlake Rd)**
+- Updated all demo address references: `orchestrator.py` (DEMO_LAT/DEMO_LNG + DEMO_ADDRESS_MAP key), `main.py` default query param, `AddressInput.tsx` placeholder
+- Updated `generate_demo_route.py` ORIGIN coordinates; regenerated `demo_route.json` via Mapbox Directions — 5.2km, ~8min, 160 vertices, route "Westlake Road, BC 97 South", polyline start 12m from address pin
+- Regenerated `demo_briefing.json`: "Fire is 260 metres from your address and closing fast — evacuate now..." — all 5 profile variants updated for new address and real threat distance
+- Wind label in `Map.tsx` corrected from "42 km/h NE" (old hardcoded) to "17.8 km/h E" (actual station 1277 data for Aug 17 7PM)
+
+**Fire perimeter pulsing animation**
+- Added `startFirePulse(map)` function — `requestAnimationFrame` loop oscillating `fire-perimeter-fill` opacity on a 2.5s sine cycle (0.08–0.25 range)
+- Returns cleanup function; `cancelPulse` variable cancels loop on map cleanup and `style.load` re-init
+
+### Decisions made
+- Directions API for 2-point overrides, Map Matching for multi-point traces — established pattern going forward
+- 1598 Westlake Rd chosen as demo address: 260m from fire perimeter, inside evac order zone, clear route south — compelling visual (blue dot near fire edge)
+- Per-point `radiuses=50` for Map Matching — necessary for hand-traced waypoints, no visible quality degradation on output
+
+### Known issues / next steps
+- Visual QA of blue dot at 1598 Westlake Rd still needed (fix just applied)
+- Visual QA of all 4 snapped closure geometries still needed
+- Consider auto-advance button in SimControls (20-min improvement for demo recording)
+- Demo Day prep: 5-min presentation + 20-min 1-on-1 judge demo
+
+---
+
+## Previous: Day 17 — Shelter geography bug fix
 
 ### What was done
 - Fixed critical shelter ranking bug: north Westside Rd users were being recommended Prospera Place (Kelowna, through fire) instead of Kal Tire Place (Vernon, north and safe)
