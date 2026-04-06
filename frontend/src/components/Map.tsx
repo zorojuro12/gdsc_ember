@@ -228,6 +228,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
         ['get', 'status'],
         'Open', '#639922',
         'Filling', '#EF9F27',
+        'Full', '#991B1B',
         '#E24B4A', // Near Full (default)
       ],
       'circle-stroke-width': 2,

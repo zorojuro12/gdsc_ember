@@ -84,15 +84,21 @@ Labels:
 - [ ] 🟢 Census vulnerability overlay (stretch goal): DA-level 65+ choropleth from GeoJSON, rendered as dashed purple regions on admin map
 - [x] 🟢 Git: full admin view working with simulation controls — merge to dev
 
-## Phase 6 — Polish & Demo (Days 17-18)
+## Phase 6 — Polish & Demo (Days 17-19)
 
 - [ ] 🟢 Fire spread model refinement: asymmetric buffer based on wind direction from station 1277 data
 - [x] 🟢 Pre-generate and cache the demo briefing output so LLM is never called live on stage — store in `/data/scenarios/2023-west-kelowna/demo_briefing.json`
+- [x] 🟢 Multi-flag briefing: expanded `demo_briefing.json` to all 16 flag permutations; `_flag_key()` generates compound keys like `mobility_pets`
+- [x] 🟢 Cross-tab live updates: `BroadcastChannel` in `broadcast.ts` — admin mutations instantly trigger resident view refetch
+- [x] 🟢 Admin opens in new tab: resident view state never lost during demo
+- [x] 🟢 Dramatic reroute at step 4: Royal LePage goes "Full" (hard filter) → system switches to Salvation Army Kelowna with real route polyline
+- [x] 🟢 Shelter routing fixes: ADVISORY closures no longer penalise shelter ranking; corridor penalty disabled in demo mode for clean predictable behaviour
+- [x] 🟢 Pre-computed alternate routes: all shelters except Kal Tire have Mapbox polylines — Salvation Army (13 min), Prospera (14 min), Margaret School (49 min); full reroute chain verified
 - [ ] 🟢 Test Demo Mode fully offline: disconnect internet, verify all map layers load, verify briefing returns cached response
-- [ ] 🟢 Fix any visual bugs, loading states, edge cases
-- [ ] 🟢 Add loading spinner / skeleton screens for all async operations
+- [ ] 🟢 Visual QA: blue dot at 1598 Westlake Rd, all 4 snapped closure geometries
 - [ ] 🟢 Ensure responsive layout works on projector resolution (1920x1080)
-- [ ] 🟢 Rehearse the 4-minute demo script 20+ times
-- [ ] 🟢 Prepare presentation slides — problem statement, architecture diagram, live demo, SDG alignment
+- [ ] 🟢 Rehearse the 5-minute presentation script + 20-minute judge demo walkthrough
+- [ ] 🟢 Record demo video for presentation (recommended over live demo in the 5-min slot)
+- [ ] 🟢 Prepare presentation slides — problem, user story, architecture diagram, SDG alignment
 - [ ] 🟢 Final deploy to Vercel + Railway with production env vars
 - [ ] 🟢 **NO NEW FEATURES** — every hour makes the existing demo more reliable, not bigger

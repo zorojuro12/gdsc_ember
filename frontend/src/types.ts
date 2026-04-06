@@ -1,5 +1,5 @@
 export type SpreadRate = 'LOW' | 'MODERATE' | 'HIGH' | 'EXTREME'
-export type ShelterStatus = 'Open' | 'Filling' | 'Near Full'
+export type ShelterStatus = 'Open' | 'Filling' | 'Near Full' | 'Full'
 
 export interface BriefingResponse {
   updated_at: string

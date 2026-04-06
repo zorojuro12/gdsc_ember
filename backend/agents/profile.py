@@ -18,16 +18,12 @@ import cache
 
 
 # Maps a profile dict to one of the pre-generated briefing keys.
+# Returns a compound key like "mobility_pets" for multi-flag combos.
 def _flag_key(profile: dict) -> str:
-    if profile.get("mobility"):
-        return "mobility"
-    if profile.get("medical"):
-        return "medical"
-    if profile.get("pets"):
-        return "pets"
-    if profile.get("no_vehicle"):
-        return "no_vehicle"
-    return "default"
+    active = [k for k in ("mobility", "medical", "pets", "no_vehicle") if profile.get(k)]
+    if not active:
+        return "default"
+    return "_".join(active)
 
 
 # Tier 2 — composes a briefing from structured data without calling the LLM.
@@ -43,21 +39,35 @@ def _template_briefing(payload: dict) -> str:
     wind_speed = threat.get("wind_speed_kmh", "?")
     wind_dir = threat.get("wind_direction", "?")
     route_summary = route.get("primary", "?")
-    route_km = route.get("distance_km", "?")
+    route_km = route.get("distance_km")
     route_min = route.get("duration_min", "?")
     shelter_name = shelter.get("name", "?")
 
+    # Format distance: sub-1km as metres for urgency
+    if isinstance(dist, (int, float)) and dist < 1:
+        dist_str = f"{int(dist * 1000)} metres"
+    else:
+        dist_str = f"{dist} km"
+
     text = (
-        f"Fire is {dist} km from your address. "
-        f"At current wind speed ({wind_speed} km/h {wind_dir}), "
-        f"the projected boundary reaches your area in approximately {hrs} hours. "
-        f"Evacuate via {route_summary} to {shelter_name} — {route_km} km, about {route_min} minutes."
+        f"Fire is {dist_str} from your address and closing fast \u2014 evacuate now. "
+        f"Proceed to {shelter_name} via {route_summary}"
     )
+    if route_km:
+        text += f", {route_km} km, about {route_min} minutes."
+    else:
+        text += f", approximately {route_min} minutes."
 
     if profile.get("mobility"):
-        text += " Recommended shelter has confirmed accessible entry."
+        if shelter.get("is_accessible"):
+            text += " Accessible entry confirmed."
+        else:
+            text += " Call ahead to confirm accessibility."
     if profile.get("medical"):
-        text += " This shelter has full electrical infrastructure for medical equipment."
+        if shelter.get("has_medical_power"):
+            text += " This shelter has full electrical infrastructure for medical equipment."
+        else:
+            text += " Bring backup power for medical equipment."
     if profile.get("pets"):
         if shelter.get("has_pet_area"):
             text += " Recommended shelter accepts pets."
@@ -68,7 +78,7 @@ def _template_briefing(payload: dict) -> str:
 
     if closures:
         road_list = " and ".join(c if isinstance(c, str) else c.get("road", "") for c in closures[:2])
-        text += f" Avoid {road_list} — closed due to fire activity."
+        text += f" Avoid {road_list}."
 
     return text
 
@@ -139,12 +149,17 @@ async def run(
     payload = _build_payload(threat, route, shelter_result, profile)
 
     if demo_mode:
-        briefing_data = cache.get("briefing:demo")
-        if briefing_data:
-            key = _flag_key(profile)
-            text = briefing_data.get("briefings", {}).get(key)
-            if text:
-                return {"briefing_text": text, "payload": payload}
+        # Only use pre-generated briefings when the shelter is Royal LePage
+        # (the default). If the shelter changed (e.g. reroute due to capacity),
+        # fall through to the template which uses the actual shelter name.
+        shelter_name = payload.get("shelter", {}).get("name", "")
+        if "Royal LePage" in shelter_name:
+            briefing_data = cache.get("briefing:demo")
+            if briefing_data:
+                key = _flag_key(profile)
+                text = briefing_data.get("briefings", {}).get(key)
+                if text:
+                    return {"briefing_text": text, "payload": payload}
         return {"briefing_text": _template_briefing(payload), "payload": payload}
 
     if os.getenv("ANTHROPIC_API_KEY", ""):

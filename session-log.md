@@ -1,6 +1,93 @@
 # EMBER session log
 
-## Last session: Day 18 — Road closure geometry, blue dot fix, demo address, fire pulse
+## Last session: Day 20 — Full shelter reroute chain, routing bug fixes
+
+### What was done
+
+**Complete shelter reroute chain with polylines**
+- Generated Mapbox route to Princess Margaret Secondary School, Penticton (shelter_003): 58.8 km, 49 min via BC 97 South — max lat 49.89, stays south of fire
+- Added `alternate_routes.shelter_003` to `demo_route.json`; updated `shelter_drive_times.shelter_003` from 55 → 49 min
+- All 4 non-Kal-Tire shelters now have pre-computed polylines for reroute scenarios
+- Full reroute chain verified: Royal LePage → Salvation Army (polyline ✅) → Prospera (polyline ✅) → Margaret School (polyline ✅)
+- Kal Tire (Vernon, north through fire) has no polyline but is an unrealistic 4-shelter-full scenario
+
+**Shelter corridor penalty fix**
+- ADVISORY closures no longer apply the +60 min corridor penalty in shelter ranking — only CLOSED roads penalise
+- Corridor penalty disabled entirely in demo mode — pre-computed drive times already encode realistic routing; only shelter status (Full/Near Full/Filling) and fire-path Shapely overlap drive ranking changes
+- Root cause of premature reroute at step 3: closure_003 (Rose Valley residential road, CLOSED) midpoint fell geometrically near the Royal LePage path, incorrectly adding +60 min
+
+**Demo timeline reroute verified clean**
+- Steps 1–3: Royal LePage Place holds throughout (no premature reroute)
+- Step 4 (9:55 PM, Royal LePage → Full): reroutes to Salvation Army Kelowna, map shows new route polyline via Horizon Drive / BC 97 North
+
+### Decisions made
+- Corridor penalty disabled in demo mode: cleaner than tuning the geometric threshold; live mode unaffected
+- shelter_003 drive time corrected to 49 min (Mapbox actual vs 55 min estimate)
+- Kal Tire left without alternate polyline — requires driving north through fire, fire-path penalty handles deprioritisation
+
+### Known issues / next steps
+- Visual QA: blue dot at 1598 Westlake Rd, all 4 snapped closure geometries
+- Offline test (DEMO_MODE=true, network disconnected)
+- Responsive layout check at 1920×1080
+- Record demo video for 5-min presentation slot
+- Prepare presentation slides
+
+---
+
+## Previous: Day 19 — Demo polish, presentation prep, routing fixes
+
+### What was done
+
+**Multi-flag briefing combinations (all 16 permutations)**
+- `_flag_key()` in `profile.py` now generates compound keys like `mobility_pets`, `medical_no_vehicle`, etc. using underscore-joined active flags
+- `demo_briefing.json` expanded from 5 single-flag variants to all 16 permutations (2^4) — each with natural-sounding text mentioning every active accommodation
+- Example: Mobility + Pets → "accessible entry confirmed and pets accepted"
+
+**Cross-tab live updates (BroadcastChannel)**
+- Created `frontend/src/lib/broadcast.ts` — thin wrapper around `BroadcastChannel('ember-sync')`
+- Admin tab calls `notifySimulationChanged()` after every advance/reset/closure/shelter-status mutation
+- Resident tab listens via `onSimulationChanged()` and immediately calls `queryClient.invalidateQueries(['briefing'])` → resident view updates the moment admin acts, no polling delay
+
+**Admin link opens in new tab**
+- Changed Admin link in `TopBar.tsx` from React Router `<Link>` to `<a target="_blank">` — resident view never unmounts, state is preserved, both views can be visible simultaneously during demo
+
+**"Full" shelter status — dramatic reroute at step 4**
+- Added `"Full"` as a hard-filter status in `shelter.py` (line ~153) — shelter with "Full" status is removed from consideration entirely, not just penalised
+- Changed step 4 in `demo_state.py`: Royal LePage → "Full" (was "Near Full")
+- Added `"Full"` badge + override button to `ShelterPanel.tsx`, `types.ts`, shelter pin color in `Map.tsx` (dark red)
+- At step 4: Royal LePage filtered out → system picks Salvation Army Kelowna (13 min via Horizon Drive, BC 97 North)
+- Pre-computed Mapbox route to Salvation Army already existed; added pre-computed route to Prospera Place (shelter_005) as well
+
+**Shelter routing bug fixes**
+- ADVISORY closures no longer apply corridor penalty in shelter ranking — only CLOSED roads add +60 min (prevents premature reroute at step 2 when Hwy 97 advisory activates)
+- Corridor penalty disabled entirely in demo mode — pre-computed drive times already encode realistic routing; only shelter status and fire-path overlap drive ranking changes in demo. Eliminates false positives from side-road closures near the Hwy 97 route (closure_003 Rose Valley was incorrectly penalising Royal LePage at step 3)
+- Result: Royal LePage holds through steps 1–3, reroute only triggers at step 4 (Full)
+
+**Pre-computed alternate routes**
+- Generated Mapbox polyline to Prospera Place (shelter_005): 9.7 km, 14 min, max lat 49.89 (safe, stays south of fire)
+- Generated Mapbox polyline to Salvation Army (shelter_004): 9.8 km, 13 min, max lat 49.89 (safe)
+- Both routes go south on Hwy 97 → across Bennett Bridge → into Kelowna, avoiding fire perimeter (fire starts above lat 49.92)
+- Updated `shelter_drive_times.shelter_005` from 18 → 14 min to match Mapbox actual
+
+**Address input cleanup**
+- Removed localStorage persistence for address (was added to survive admin navigation, but admin now opens in a new tab so it's unnecessary)
+- Address input starts empty on every page load; profile flags still persist to localStorage as before
+
+### Decisions made
+- Demo corridor penalty disabled for demo mode: cleaner and more predictable than tuning the geometric threshold. Live mode still uses the penalty as a routing heuristic
+- "Full" as hard filter (not soft penalty): correctly models shelter capacity being exhausted
+- Salvation Army chosen as step-4 reroute target: closest at 13 min after Royal LePage is filtered, route is safe
+
+### Known issues / next steps
+- Visual QA of blue dot + all 4 snapped closure geometries still pending
+- Offline test (DEMO_MODE=true with network disconnected)
+- Responsive layout check at 1920×1080
+- Presentation slides + demo recording
+- Final deploy to Vercel + Railway
+
+---
+
+## Previous: Day 18 — Road closure geometry, blue dot fix, demo address, fire pulse
 
 ### What was done
 

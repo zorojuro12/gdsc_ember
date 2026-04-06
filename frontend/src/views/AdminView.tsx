@@ -8,6 +8,7 @@ import SimControls from '../components/admin/SimControls'
 import { useAdminSituation } from '../hooks/useAdminSituation'
 import { useAppConfig } from '../contexts/AppConfigContext'
 import { API_BASE } from '../lib/api'
+import { notifySimulationChanged } from '../lib/broadcast'
 import type { AdminShelter } from '../types'
 
 export default function AdminView() {
@@ -22,6 +23,7 @@ export default function AdminView() {
       body: JSON.stringify({ status }),
     })
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
+    notifySimulationChanged()
   }
 
   async function handleTriggerClosure(closureId: string) {
@@ -31,16 +33,19 @@ export default function AdminView() {
       body: JSON.stringify({ closure_id: closureId }),
     })
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
+    notifySimulationChanged()
   }
 
   async function handleAdvanceTime() {
     await fetch(`${API_BASE}/api/admin/simulate/advance`, { method: 'POST' })
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
+    notifySimulationChanged()
   }
 
   async function handleReset() {
     await fetch(`${API_BASE}/api/admin/simulate/reset`, { method: 'POST' })
     void queryClient.invalidateQueries({ queryKey: ['admin-situation'] })
+    notifySimulationChanged()
   }
 
   const isDemo = config?.demoMode ?? true

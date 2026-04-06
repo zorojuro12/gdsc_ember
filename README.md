@@ -27,13 +27,14 @@ Enter an address and set profile flags (mobility, medical needs, pets, no vehicl
 
 ### Admin View (`/admin`)
 
-A live operational dashboard for emergency coordinators:
+Opens in a new tab so the resident view stays visible alongside it. A live operational dashboard for emergency coordinators:
 
 - **Situation panel** — fire name, perimeter size, spread rate, wind speed/direction, and properties under evacuation order and alert
 - **Roads panel** — active DriveBC closures with status badges
-- **Shelters panel** — all 5 shelters with current status and manual override buttons (Open / Filling / Near Full)
+- **Shelters panel** — all 5 shelters with current status and manual override buttons (Open / Filling / Near Full / Full)
 - **Sim controls** — advance the demo timeline through 4 real historical milestones, trigger individual road closures, and reset to the initial state
 - Demo/Live badge — gray pill in demo mode, pulsing red in live mode
+- Any admin action (advance, closure, shelter status change) instantly updates the resident view via `BroadcastChannel` — no polling delay
 
 ## How It Works
 
@@ -55,15 +56,16 @@ Shelters are sorted by effective drive time after these adjustments:
 
 | Rule | Effect |
 |---|---|
-| Mobility flag | Hard-filters out non-accessible shelters |
+| Full status | Hard-filter — shelter removed from consideration entirely |
+| Mobility flag | Hard-filter — removes non-accessible shelters |
 | Medical flag | Multiplies drive time by 0.8 for shelters with medical-grade power |
 | Pets flag | Adds +30 min to shelters without a pet area |
 | Near Full status | +10 min penalty |
 | Filling status | +5 min penalty |
-| Active road closure on path | +60 min per closure that lies between user and shelter |
+| Active CLOSED road on path (live mode) | +60 min per closure that lies between user and shelter |
 | Route goes through fire | +200 min if straight-line path overlaps fire polygon by >0.03 degrees (~3 km) |
 
-The fire-path penalty ensures users near the fire are routed to safe shelters (e.g. north to Vernon) rather than south through the fire perimeter.
+ADVISORY roads carry no penalty — they are passable. The fire-path penalty ensures users near the fire are routed away from the perimeter (e.g. north to Vernon rather than through the fire). In demo mode, pre-computed drive times drive the ranking rather than the road-corridor heuristic.
 
 ### Map layers
 
@@ -198,7 +200,7 @@ data/scenarios/2023-west-kelowna/
 
 | Param | Type | Default | Description |
 |---|---|---|---|
-| `address` | string | `1240 Marble Terrace, West Kelowna, BC` | Resident's address |
+| `address` | string | `1598 Westlake Rd, West Kelowna, BC` | Resident's address |
 | `mobility` | bool | false | Filters to accessible shelters only |
 | `medical` | bool | false | Boosts shelters with medical-grade power infrastructure |
 | `pets` | bool | false | Boosts pet-friendly shelters |
@@ -229,12 +231,14 @@ data/scenarios/2023-west-kelowna/
 
 The admin Sim Controls step through four real historical milestones from Aug 17, 2023:
 
-| Step | Time | Event |
-|---|---|---|
-| 1 | 7:00 PM | Westside Road closed — fire moves toward Raymer Bay |
-| 2 | 8:00 PM | DriveBC advisory for Hwy 97 (Glenrosa to Bennett Bridge) |
-| 3 | 9:00 PM | Rose Valley & WK Estates evacuation order — 763 properties |
-| 4 | 9:55 PM | Fire jumps Okanagan Lake — Kelowna state of emergency |
+| Step | Time | Event | Resident view impact |
+|---|---|---|---|
+| 1 | 7:00 PM | Westside Road + Bear Creek Road closed | 2 closures listed, Royal LePage recommended |
+| 2 | 8:00 PM | DriveBC advisory for Hwy 97 (Glenrosa to Bennett Bridge) | 3rd closure listed (advisory), no reroute |
+| 3 | 9:00 PM | Rose Valley evacuation order — Royal LePage fills up | Royal LePage → Filling (+5 min penalty) |
+| 4 | 9:55 PM | Fire jumps Okanagan Lake — Royal LePage at capacity | **Reroute**: Royal LePage Full → Salvation Army Kelowna (13 min, new route polyline on map) |
+
+Any step advance in the admin tab is broadcast instantly to the resident tab via `BroadcastChannel`.
 
 ## License
 

@@ -4,14 +4,16 @@ const STATUS_BADGE: Record<ShelterStatus, string> = {
   Open:       'bg-green-900 text-green-300',
   Filling:    'bg-orange-900 text-orange-300',
   'Near Full':'bg-red-900 text-red-300',
+  Full:       'bg-red-950 text-red-400',
 }
 
-const OVERRIDE_BUTTONS: ShelterStatus[] = ['Open', 'Filling', 'Near Full']
+const OVERRIDE_BUTTONS: ShelterStatus[] = ['Open', 'Filling', 'Near Full', 'Full']
 
 const OVERRIDE_ACTIVE: Record<ShelterStatus, string> = {
   Open:       'bg-green-700 text-white',
   Filling:    'bg-orange-600 text-white',
   'Near Full':'bg-red-700 text-white',
+  Full:       'bg-red-900 text-white',
 }
 
 const OVERRIDE_INACTIVE = 'bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-gray-200'

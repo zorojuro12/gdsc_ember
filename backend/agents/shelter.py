@@ -147,6 +147,12 @@ async def run(user_lat: float, user_lng: float, profile: dict, demo_mode: bool) 
     for s in shelters:
         sid = s["id"]
 
+        status = shelter_statuses.get(sid, "Open")
+
+        # Full = capacity reached — hard filter, not accepting new evacuees.
+        if status == "Full":
+            continue
+
         if mobility and not s.get("is_accessible", False):
             continue
 
@@ -167,21 +173,26 @@ async def run(user_lat: float, user_lng: float, profile: dict, demo_mode: bool) 
         if pets and not s.get("has_pet_area", False):
             effective_time += 30
 
-        status = shelter_statuses.get(sid, "Open")
         if status == "Near Full":
             effective_time += 10
         elif status == "Filling":
             effective_time += 5
 
-        # Closure-corridor penalty: +60 min for each active closure that lies
+        # Closure-corridor penalty: +60 min for each CLOSED road that lies
         # between the user and this shelter on the direct path.
-        for closure in active_closures:
-            mp = closure.get("midpoint", {})
-            c_lat = mp.get("lat")
-            c_lng = mp.get("lng")
-            if c_lat is not None and c_lng is not None:
-                if _closure_blocks_path(user_lat, user_lng, s["lat"], s["lng"], c_lat, c_lng):
-                    effective_time += 60
+        # ADVISORY roads are passable — skip them.
+        # In demo mode, skip entirely — pre-computed drive times already encode
+        # realistic routing; only shelter status and fire overlap drive ranking.
+        if not demo_mode:
+            for closure in active_closures:
+                if closure.get("status") == "ADVISORY":
+                    continue
+                mp = closure.get("midpoint", {})
+                c_lat = mp.get("lat")
+                c_lng = mp.get("lng")
+                if c_lat is not None and c_lng is not None:
+                    if _closure_blocks_path(user_lat, user_lng, s["lat"], s["lng"], c_lat, c_lng):
+                        effective_time += 60
 
         # Fire-path penalty: if the straight-line path to this shelter passes
         # through more than _FIRE_OVERLAP_THRESHOLD degrees of the fire polygon,

@@ -64,11 +64,21 @@ async def run(user_lat: float, user_lng: float, demo_mode: bool, top_shelter: di
         primary = route_data["primary"]
         fallback = route_data["fallback"]
 
-        # If shelter agent picked a non-default shelter, use its drive time from
-        # the pre-computed table but clear the polyline (no hardcoded route exists
-        # for that shelter). The briefing card and shelter card will still match.
+        # If shelter agent picked a non-default shelter, check for a pre-computed
+        # alternate route (with polyline). Falls back to drive time estimate.
         default_shelter_id = "shelter_001"
         if top_shelter and top_shelter.get("id") != default_shelter_id:
+            alt_routes = route_data.get("alternate_routes", {})
+            alt = alt_routes.get(top_shelter["id"])
+            if alt:
+                return {
+                    "summary": alt["summary"],
+                    "distance_km": alt.get("distance_km"),
+                    "duration_min": alt.get("duration_min", 15),
+                    "polyline": alt.get("polyline", ""),
+                    "fallback_summary": fallback["summary"],
+                    "closures": closures,
+                }
             drive_times = route_data.get("shelter_drive_times", {})
             duration = drive_times.get(top_shelter["id"], 60)
             return {

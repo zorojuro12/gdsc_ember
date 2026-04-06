@@ -53,7 +53,7 @@ TIMELINE = [
         "time": "2023-08-17T21:55:00-07:00",
         "active_closures": ["closure_004", "closure_001", "closure_002", "closure_003"],
         "shelter_statuses": {
-            "shelter_001": "Near Full",
+            "shelter_001": "Full",
             "shelter_002": "Filling",
             "shelter_003": "Open",
             "shelter_004": "Open",

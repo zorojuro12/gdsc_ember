@@ -1,5 +1,3 @@
-import { Link } from 'react-router-dom'
-
 type EvacStatus = 'ORDER' | 'ALERT' | 'WATCH'
 
 const STATUS_STYLES: Record<EvacStatus, string> = {
@@ -16,9 +14,9 @@ export default function TopBar({ status = 'ORDER' }: { status?: EvacStatus }) {
         <span className={`text-xs font-bold px-3 py-1 rounded-full ${STATUS_STYLES[status]}`}>
           EVACUATION {status}
         </span>
-        <Link to="/admin" className="text-gray-500 text-xs hover:text-gray-300 transition-colors">
+        <a href="/admin" target="_blank" rel="noopener noreferrer" className="text-gray-500 text-xs hover:text-gray-300 transition-colors">
           Admin
-        </Link>
+        </a>
       </div>
     </div>
   )

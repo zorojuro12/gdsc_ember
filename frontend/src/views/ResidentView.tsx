@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import Map from '../components/Map'
 import TopBar from '../components/TopBar'
 import AddressInput from '../components/AddressInput'
@@ -6,9 +7,10 @@ import ProfileFlags from '../components/ProfileFlags'
 import BriefingCard from '../components/BriefingCard'
 import AlertBanner from '../components/AlertBanner'
 import { useBriefing } from '../hooks/useBriefing'
+import { onSimulationChanged } from '../lib/broadcast'
 import type { ProfileFlags as ProfileFlagsType } from '../types'
 
-const STORAGE_KEY = 'ember_profile_flags'
+const FLAGS_KEY = 'ember_profile_flags'
 
 const DEFAULT_FLAGS: ProfileFlagsType = {
   mobility: false,
@@ -19,7 +21,7 @@ const DEFAULT_FLAGS: ProfileFlagsType = {
 
 function loadFlags(): ProfileFlagsType {
   try {
-    const stored = localStorage.getItem(STORAGE_KEY)
+    const stored = localStorage.getItem(FLAGS_KEY)
     return stored ? { ...DEFAULT_FLAGS, ...JSON.parse(stored) } : DEFAULT_FLAGS
   } catch {
     return DEFAULT_FLAGS
@@ -27,13 +29,21 @@ function loadFlags(): ProfileFlagsType {
 }
 
 export default function ResidentView() {
+  const queryClient = useQueryClient()
   const [address, setAddress] = useState('')
   const [flags, setFlags] = useState<ProfileFlagsType>(loadFlags)
   const [bannerMessage, setBannerMessage] = useState<string | null>(null)
 
+  // Listen for admin tab simulation changes → refetch briefing instantly
+  useEffect(() => {
+    return onSimulationChanged(() => {
+      void queryClient.invalidateQueries({ queryKey: ['briefing'] })
+    })
+  }, [queryClient])
+
   // Persist flags to localStorage on every change
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(flags))
+    localStorage.setItem(FLAGS_KEY, JSON.stringify(flags))
   }, [flags])
 
   const handleToggle = useCallback((key: keyof ProfileFlagsType) => {
