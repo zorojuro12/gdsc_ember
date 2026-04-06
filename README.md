@@ -8,7 +8,7 @@ Real-time wildfire evacuation briefings using BC government open data. Built for
 
 | Layer | Tech |
 |---|---|
-| Frontend | React 18 + TypeScript, Vite, Tailwind CSS v4, Mapbox GL JS, React Query |
+| Frontend | React 19 + TypeScript, Vite, Tailwind CSS v4, Mapbox GL JS, React Query |
 | Backend | Python 3.11+, FastAPI, Shapely, pandas |
 | LLM | Anthropic Claude Sonnet (single call per briefing) |
 | APIs | Google Maps (Geocoding, Directions, Places Autocomplete) |
@@ -150,7 +150,8 @@ frontend/
     hooks/
       useBriefing.ts       React Query — polls /api/briefing every 5 min
       useAdminSituation.ts React Query — polls /api/admin/situation every 30s
-      useAppConfig.ts      Reads demo/live mode from /api/config
+    contexts/
+      AppConfigContext.tsx  Reads demo/live mode from /api/config
     types.ts               Shared TypeScript interfaces
 
 backend/
@@ -170,9 +171,12 @@ backend/
 data/scenarios/2023-west-kelowna/
   mcdougall_creek_perimeter.geojson
   spread_2hr/4hr/6hr.geojson
+  evac_order_zone.geojson
+  evac_alert_zone.geojson
   road_closures.json
   shelters.json
   demo_route.json
+  demo_briefing.json
   station_1277_weather.json
   2023-08-15.csv … 2023-08-19.csv
 ```

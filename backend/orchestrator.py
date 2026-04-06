@@ -10,15 +10,27 @@ import asyncio
 from agents import profile, route, shelter, threat
 from geocode import geocode
 
-DEMO_LAT = 49.8625
-DEMO_LNG = -119.5800
+DEMO_LAT = 49.889862
+DEMO_LNG = -119.554390
+
+# Known demo addresses mapped to real coordinates so the blue dot and route
+# origin are geographically correct without calling the Geocoding API.
+DEMO_ADDRESS_MAP: dict[str, tuple[float, float]] = {
+    "1598 westlake": (49.889862, -119.554390),
+}
 
 
 # Runs the full briefing pipeline: geocode -> agents (parallel) -> profile.
 async def run_briefing(address: str, profile_flags: dict, demo_mode: bool) -> dict:
     user_lat, user_lng = DEMO_LAT, DEMO_LNG
 
-    if not demo_mode:
+    if demo_mode:
+        addr_lower = address.lower()
+        for prefix, (lat, lng) in DEMO_ADDRESS_MAP.items():
+            if prefix in addr_lower:
+                user_lat, user_lng = lat, lng
+                break
+    else:
         coords = await geocode(address)
         if coords:
             user_lat, user_lng = coords

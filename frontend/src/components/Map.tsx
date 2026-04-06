@@ -9,12 +9,23 @@ mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN ?? ''
 
 type Coord = { lat: number; lng: number }
 type RoadClosure = {
+  id: string
   road_name: string
   status: string
   waypoints?: Coord[]
   coordinates_from: Coord
   coordinates_to: Coord
 }
+
+// Closures whose geometry has been snapped to real OSM roads via
+// backend/scripts/snap_closures_to_roads.py. These are rendered from
+// /road_closures_geometry.geojson instead of hand-traced waypoints.
+const SNAPPED_CLOSURE_IDS = new Set<string>([
+  'closure_001',
+  'closure_002',
+  'closure_003',
+  'closure_004',
+])
 type Shelter = { name: string; lat: number; lng: number }
 
 type MapData = {
@@ -95,7 +106,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     paint: { 'line-color': '#E24B4A', 'line-width': 1.5 },
   })
 
-  // --- Fire perimeter ---
+  // --- Fire perimeter (pulsing) ---
 
   map.addSource('fire-perimeter', {
     type: 'geojson',
@@ -117,18 +128,21 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
   // --- Road closures ---
 
   // Mapbox uses [lng, lat]; JSON has { lat, lng } — swap here.
-  // Use waypoints array when present for better road tracing, otherwise fall back
-  // to the two-point from/to line.
-  const closureFeatures = d.closures.road_closures.map((c) => {
-    const coords = c.waypoints && c.waypoints.length >= 2
-      ? c.waypoints.map((w) => [w.lng, w.lat])
-      : [[c.coordinates_from.lng, c.coordinates_from.lat], [c.coordinates_to.lng, c.coordinates_to.lat]]
-    return {
-      type: 'Feature' as const,
-      geometry: { type: 'LineString' as const, coordinates: coords },
-      properties: { road_name: c.road_name, status: c.status },
-    }
-  })
+  // Closures in SNAPPED_CLOSURE_IDS are rendered from the pre-snapped
+  // /road_closures_geometry.geojson file below; skip them here so we don't
+  // double-render.
+  const closureFeatures = d.closures.road_closures
+    .filter((c) => !SNAPPED_CLOSURE_IDS.has(c.id))
+    .map((c) => {
+      const coords = c.waypoints && c.waypoints.length >= 2
+        ? c.waypoints.map((w) => [w.lng, w.lat])
+        : [[c.coordinates_from.lng, c.coordinates_from.lat], [c.coordinates_to.lng, c.coordinates_to.lat]]
+      return {
+        type: 'Feature' as const,
+        geometry: { type: 'LineString' as const, coordinates: coords },
+        properties: { road_name: c.road_name, status: c.status },
+      }
+    })
 
   map.addSource('road-closures', {
     type: 'geojson',
@@ -148,6 +162,40 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     id: 'road-closures-labels',
     type: 'symbol',
     source: 'road-closures',
+    layout: {
+      'symbol-placement': 'line',
+      'text-field': ['get', 'road_name'],
+      'text-size': 11,
+      'text-font': ['Open Sans Semibold', 'Arial Unicode MS Bold'],
+    },
+    paint: {
+      'text-color': ['match', ['get', 'status'], 'CLOSED', '#E24B4A', '#EF9F27'],
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1.5,
+    },
+  })
+
+  // Pre-snapped road closure geometry (Mapbox Map Matching output committed at
+  // dev time). Rendered with identical paint/layout to the waypoint-based
+  // closures so the layer toggle covers both uniformly.
+  map.addSource('road-closures-snapped', {
+    type: 'geojson',
+    data: '/road_closures_geometry.geojson',
+  })
+  map.addLayer({
+    id: 'road-closures-snapped-line',
+    type: 'line',
+    source: 'road-closures-snapped',
+    paint: {
+      'line-color': ['match', ['get', 'status'], 'CLOSED', '#E24B4A', '#EF9F27'],
+      'line-width': ['match', ['get', 'status'], 'CLOSED', 4, 3],
+      'line-dasharray': [4, 2],
+    },
+  })
+  map.addLayer({
+    id: 'road-closures-snapped-labels',
+    type: 'symbol',
+    source: 'road-closures-snapped',
     layout: {
       'symbol-placement': 'line',
       'text-field': ['get', 'road_name'],
@@ -210,8 +258,8 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
   })
 
   // --- Wind vector arrow ---
-  // Hardcoded Aug 17 9PM: FROM 225° (SW) → blowing TO 45° (NE). text-rotate is
-  // degrees clockwise from north, so 45 points NE.
+  // Aug 17 7PM from station 1277: wind FROM ~270° (W) → blowing TO 90° (E).
+  // text-rotate is degrees clockwise from north, so 90 points E.
 
   map.addSource('wind-station', {
     type: 'geojson',
@@ -221,7 +269,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
         {
           type: 'Feature',
           geometry: { type: 'Point', coordinates: [-119.58, 49.86] },
-          properties: { bearing: 45 },
+          properties: { bearing: 90 },
         },
       ],
     },
@@ -249,7 +297,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     type: 'symbol',
     source: 'wind-station',
     layout: {
-      'text-field': '42 km/h NE',
+      'text-field': '17.8 km/h E',
       'text-size': 11,
       'text-offset': [0, 2],
       'text-anchor': 'top',
@@ -260,6 +308,36 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
       'text-color': '#1a1a1a',
       'text-halo-color': '#ffffff',
       'text-halo-width': 1.5,
+    },
+  })
+
+  // --- User location blue dot (always last = always on top) ---
+  // Created here with empty data so the layers exist at the top of the stack.
+  // updateUserLocation() later fills in the actual coordinates.
+
+  map.addSource('user-location', {
+    type: 'geojson',
+    data: { type: 'FeatureCollection', features: [] },
+  })
+  map.addLayer({
+    id: 'user-location-glow',
+    type: 'circle',
+    source: 'user-location',
+    paint: {
+      'circle-radius': 20,
+      'circle-color': '#3B82F6',
+      'circle-opacity': 0.3,
+    },
+  })
+  map.addLayer({
+    id: 'user-location-dot',
+    type: 'circle',
+    source: 'user-location',
+    paint: {
+      'circle-radius': 9,
+      'circle-color': '#3B82F6',
+      'circle-stroke-width': 3,
+      'circle-stroke-color': '#ffffff',
     },
   })
 }
@@ -306,6 +384,23 @@ function updateRouteLayer(map: mapboxgl.Map, polyline: string | null) {
   }
 }
 
+// Starts a requestAnimationFrame loop that oscillates the fire perimeter
+// fill-opacity between 0.08 and 0.25 on a ~2.5s sine-wave cycle. Returns a
+// cancel function to stop the loop (called on unmount or style change).
+function startFirePulse(map: mapboxgl.Map): () => void {
+  let raf = 0
+  function tick() {
+    if (!map.getLayer('fire-perimeter-fill')) return
+    // 2.5-second full cycle
+    const t = (Date.now() % 2500) / 2500
+    const opacity = 0.08 + 0.17 * (0.5 + 0.5 * Math.sin(t * Math.PI * 2))
+    map.setPaintProperty('fire-perimeter-fill', 'fill-opacity', opacity)
+    raf = requestAnimationFrame(tick)
+  }
+  raf = requestAnimationFrame(tick)
+  return () => cancelAnimationFrame(raf)
+}
+
 const STYLES = {
   streets: 'mapbox://styles/mapbox/streets-v12',
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -321,7 +416,7 @@ type LayerVisibility = {
 const LAYER_GROUPS: Record<keyof LayerVisibility, string[]> = {
   spread: ['spread-6hr-fill', 'spread-6hr-line', 'spread-4hr-fill', 'spread-4hr-line', 'spread-2hr-fill', 'spread-2hr-line'],
   evacZones: ['evac-alert-fill', 'evac-alert-line', 'evac-order-fill', 'evac-order-line'],
-  closures: ['road-closures-line', 'road-closures-labels'],
+  closures: ['road-closures-line', 'road-closures-labels', 'road-closures-snapped-line', 'road-closures-snapped-labels'],
   shelters: ['shelter-pins', 'shelter-labels'],
 }
 
@@ -343,7 +438,9 @@ function applyLayerVisibility(map: mapboxgl.Map, vis: LayerVisibility) {
   }
 }
 
-// Adds or updates the user location blue dot on the map (always on top).
+// Updates the user location blue dot data. The source and layers are created
+// by addAllLayers() at the very end of the layer stack so they're always on
+// top of fire perimeter, evac zones, closures, and shelters.
 function updateUserLocation(map: mapboxgl.Map, location: { lat: number; lng: number } | null) {
   const data: GeoJSON.FeatureCollection = {
     type: 'FeatureCollection',
@@ -354,32 +451,10 @@ function updateUserLocation(map: mapboxgl.Map, location: { lat: number; lng: num
   const existing = map.getSource('user-location') as mapboxgl.GeoJSONSource | undefined
   if (existing) {
     existing.setData(data)
-    if (map.getLayer('user-location-glow')) map.moveLayer('user-location-glow')
-    if (map.getLayer('user-location-dot')) map.moveLayer('user-location-dot')
-  } else {
-    map.addSource('user-location', { type: 'geojson', data })
-    map.addLayer({
-      id: 'user-location-glow',
-      type: 'circle',
-      source: 'user-location',
-      paint: {
-        'circle-radius': 18,
-        'circle-color': '#3B82F6',
-        'circle-opacity': 0.25,
-      },
-    })
-    map.addLayer({
-      id: 'user-location-dot',
-      type: 'circle',
-      source: 'user-location',
-      paint: {
-        'circle-radius': 8,
-        'circle-color': '#3B82F6',
-        'circle-stroke-width': 3,
-        'circle-stroke-color': '#ffffff',
-      },
-    })
   }
+  // Always push to top in case other layers were added after us
+  if (map.getLayer('user-location-glow')) map.moveLayer('user-location-glow')
+  if (map.getLayer('user-location-dot')) map.moveLayer('user-location-dot')
 }
 
 type MapProps = {
@@ -416,6 +491,7 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
 
     let mapData: MapData | null = null
     let initialLoadComplete = false
+    let cancelPulse: (() => void) | null = null
 
     map.on('load', () => {
       void (async () => {
@@ -441,6 +517,7 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
           shelters: (await shel.json()) as MapData['shelters'],
         }
         addAllLayers(map, mapData)
+        cancelPulse = startFirePulse(map)
         // Apply any prop data that arrived before the map finished loading
         if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
         if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
@@ -450,13 +527,16 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
     // Re-add all layers after setStyle() clears them
     map.on('style.load', () => {
       if (!initialLoadComplete || !mapData) return
+      cancelPulse?.()
       addAllLayers(map, mapData)
+      cancelPulse = startFirePulse(map)
       applyLayerVisibility(map, layerVisRef.current)
       if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
       if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
     })
 
     return () => {
+      cancelPulse?.()
       map.remove()
       mapRef.current = null
     }

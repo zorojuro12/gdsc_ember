@@ -51,7 +51,7 @@ def health():
 
 @app.get("/api/briefing")
 async def get_briefing(
-    address: str = Query(default="1240 Marble Terrace, West Kelowna, BC"),
+    address: str = Query(default="1598 Westlake Rd, West Kelowna, BC"),
     mobility: bool = Query(default=False),
     medical: bool = Query(default=False),
     pets: bool = Query(default=False),

@@ -67,7 +67,7 @@ export default function AddressInput({ onSubmit }: { onSubmit: (address: string)
         type="text"
         value={value}
         onChange={e => setValue(e.target.value)}
-        placeholder="Enter your address..."
+        placeholder="1598 Westlake Rd, West Kelowna, BC"
         className="flex-1 bg-gray-800 text-white text-sm rounded-lg px-3 py-2 border border-gray-700 placeholder-gray-500 focus:outline-none focus:border-orange-500"
       />
       <button

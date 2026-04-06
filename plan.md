@@ -82,7 +82,7 @@ Labels:
 - [x] 🟢 Simulation control buttons `frontend/src/components/admin/SimControls.tsx`: closure dropdown (inactive only), [Advance to Next Step] (disabled at last step), [Reset], current sim time display
 - [x] 🟢 Demo Mode toggle switch + LIVE badge in admin top bar
 - [ ] 🟢 Census vulnerability overlay (stretch goal): DA-level 65+ choropleth from GeoJSON, rendered as dashed purple regions on admin map
-- [ ] 🟢 Git: full admin view working with simulation controls — merge to dev
+- [x] 🟢 Git: full admin view working with simulation controls — merge to dev
 
 ## Phase 6 — Polish & Demo (Days 17-18)
 
