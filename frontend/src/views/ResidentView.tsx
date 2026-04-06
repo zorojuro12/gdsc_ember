@@ -88,7 +88,7 @@ export default function ResidentView() {
         <div className="lg:w-[380px] lg:overflow-y-auto lg:border-l lg:border-gray-800 p-4 space-y-4">
           <AddressInput onSubmit={setAddress} />
           <ProfileFlags flags={flags} onToggle={handleToggle} />
-          <BriefingCard data={data} isLoading={isLoading} isError={isError} />
+          <BriefingCard data={data} isLoading={isLoading} isError={isError} userAddress={address} />
         </div>
       </div>
     </div>

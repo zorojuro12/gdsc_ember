@@ -1,6 +1,6 @@
 export default function MapLegend() {
   return (
-    <div className="absolute bottom-8 left-2 z-10 bg-white/85 backdrop-blur-sm rounded-lg p-2.5 shadow-md text-[11px] text-gray-800 w-44 pointer-events-none">
+    <div className="absolute bottom-8 left-2 z-10 bg-gray-900/80 backdrop-blur-md rounded-lg p-2.5 shadow-lg border border-white/10 text-[11px] text-gray-300 w-44 pointer-events-none">
       <p className="font-semibold uppercase tracking-wider text-gray-500 mb-2 text-[10px]">
         Legend
       </p>
@@ -51,8 +51,8 @@ export default function MapLegend() {
 
         {/* Wind */}
         <Row label="Wind: 42 km/h NE">
-          <span className="text-sm leading-none flex-shrink-0" style={{ display: 'inline-block', transform: 'rotate(45deg)' }}>
-            ▲
+          <span className="text-xs leading-none flex-shrink-0 text-orange-400 font-bold" style={{ display: 'inline-block', transform: 'rotate(45deg)' }}>
+            ›
           </span>
         </Row>
       </div>
@@ -78,7 +78,7 @@ function DashedLine({ color }: { color: string }) {
 function Dot({ color }: { color: string }) {
   return (
     <div
-      className="w-3 h-3 rounded-full border-[1.5px] border-white flex-shrink-0 shadow-sm"
+      className="w-3 h-3 rounded-full border-[1.5px] border-white/20 flex-shrink-0 shadow-sm"
       style={{ backgroundColor: color }}
     />
   )

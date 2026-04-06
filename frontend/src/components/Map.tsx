@@ -253,59 +253,8 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
     },
   })
 
-  // --- Wind vector arrow ---
-  // Aug 17 7PM from station 1277: wind FROM ~270° (W) → blowing TO 90° (E).
-  // text-rotate is degrees clockwise from north, so 90 points E.
-
-  map.addSource('wind-station', {
-    type: 'geojson',
-    data: {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: { type: 'Point', coordinates: [-119.58, 49.86] },
-          properties: { bearing: 90 },
-        },
-      ],
-    },
-  })
-  map.addLayer({
-    id: 'wind-arrow',
-    type: 'symbol',
-    source: 'wind-station',
-    layout: {
-      'text-field': '▲',
-      'text-size': 20,
-      'text-rotate': ['get', 'bearing'],
-      'text-rotation-alignment': 'map',
-      'text-allow-overlap': true,
-      'text-ignore-placement': true,
-    },
-    paint: {
-      'text-color': '#1a1a1a',
-      'text-halo-color': '#ffffff',
-      'text-halo-width': 1,
-    },
-  })
-  map.addLayer({
-    id: 'wind-label',
-    type: 'symbol',
-    source: 'wind-station',
-    layout: {
-      'text-field': '17.8 km/h E',
-      'text-size': 11,
-      'text-offset': [0, 2],
-      'text-anchor': 'top',
-      'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
-      'text-allow-overlap': true,
-    },
-    paint: {
-      'text-color': '#1a1a1a',
-      'text-halo-color': '#ffffff',
-      'text-halo-width': 1.5,
-    },
-  })
+  // Wind indicator is now a DOM Marker (see createWindMarkerElement below)
+  // so it survives setStyle() calls and supports CSS animation.
 
   // --- User location blue dot (always last = always on top) ---
   // Created here with empty data so the layers exist at the top of the stack.
@@ -417,6 +366,55 @@ function startFirePulse(map: mapboxgl.Map): () => void {
   return () => cancelAnimationFrame(raf)
 }
 
+// Creates the animated wind badge DOM element used for the Mapbox Marker.
+// Injects CSS keyframes once into the document head.
+// Wind is 42 km/h NE (bearing 45°) from BCWS station 1277 on Aug 17 @ 9:55 PM.
+function createWindMarkerElement(): HTMLDivElement {
+  if (!document.getElementById('ember-wind-marker-styles')) {
+    const style = document.createElement('style')
+    style.id = 'ember-wind-marker-styles'
+    style.textContent = `
+      @keyframes emberWindStream {
+        0%   { opacity: 0.15; }
+        50%  { opacity: 1;    }
+        100% { opacity: 0.15; }
+      }
+      .ember-wc1 { animation: emberWindStream 1.8s ease-in-out infinite 0s;    }
+      .ember-wc2 { animation: emberWindStream 1.8s ease-in-out infinite 0.6s;  }
+      .ember-wc3 { animation: emberWindStream 1.8s ease-in-out infinite 1.2s;  }
+    `
+    document.head.appendChild(style)
+  }
+
+  const el = document.createElement('div')
+  el.style.cssText = 'pointer-events:none;user-select:none;'
+  // Chevrons point right (East). Rotate container −45° to point NE.
+  el.innerHTML = `
+    <div style="
+      background:rgba(17,24,39,0.82);
+      backdrop-filter:blur(8px);
+      -webkit-backdrop-filter:blur(8px);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:10px;
+      padding:7px 12px;
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:3px;
+      box-shadow:0 4px 16px rgba(0,0,0,0.4);
+    ">
+      <div style="transform:rotate(-45deg);display:flex;align-items:center;gap:0px;line-height:1;">
+        <span class="ember-wc1" style="color:#f97316;font-size:22px;font-weight:bold;">›</span>
+        <span class="ember-wc2" style="color:#f97316;font-size:22px;font-weight:bold;">›</span>
+        <span class="ember-wc3" style="color:#f97316;font-size:22px;font-weight:bold;">›</span>
+      </div>
+      <span style="color:#f97316;font-size:11px;font-weight:700;font-family:monospace;letter-spacing:0.02em;white-space:nowrap;">42 km/h NE</span>
+      <span style="color:#9ca3af;font-size:9px;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;">Wind</span>
+    </div>
+  `
+  return el
+}
+
 const STYLES = {
   streets: 'mapbox://styles/mapbox/streets-v12',
   satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
@@ -469,6 +467,7 @@ export default function Map({ routePolyline = null, userLocation = null, shelter
   const mapDataRef = useRef<MapData | null>(null)
   const routePolylineRef = useRef<string | null>(null)
   const userMarkerRef = useRef<mapboxgl.Marker | null>(null)
+  const windMarkerRef = useRef<mapboxgl.Marker | null>(null)
 
   const shelterStatusesRef = useRef<Record<string, string>>({})
   const [satellite, setSatellite] = useState(false)
@@ -523,6 +522,18 @@ export default function Map({ routePolyline = null, userLocation = null, shelter
         mapDataRef.current = mapData
         addAllLayers(map, mapData)
         cancelPulse = startFirePulse(map)
+
+        // Wind badge — positioned at fire perimeter centroid (~[-119.57, 49.95])
+        // DOM Marker survives setStyle() calls, supports CSS animation.
+        if (!windMarkerRef.current) {
+          windMarkerRef.current = new mapboxgl.Marker({
+            element: createWindMarkerElement(),
+            anchor: 'center',
+          })
+            .setLngLat([-119.57, 49.95])
+            .addTo(map)
+        }
+
         // Apply any prop data that arrived before the map finished loading
         if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
         if (Object.keys(shelterStatusesRef.current).length > 0) {
@@ -548,6 +559,8 @@ export default function Map({ routePolyline = null, userLocation = null, shelter
       cancelPulse?.()
       userMarkerRef.current?.remove()
       userMarkerRef.current = null
+      windMarkerRef.current?.remove()
+      windMarkerRef.current = null
       map.remove()
       mapRef.current = null
     }

@@ -7,7 +7,6 @@ export default function AlertBanner({
   message: string | null
   onDismiss: () => void
 }) {
-  // Auto-dismiss after 10 seconds
   useEffect(() => {
     if (!message) return
     const timer = setTimeout(onDismiss, 10_000)
@@ -17,11 +16,18 @@ export default function AlertBanner({
   if (!message) return null
 
   return (
-    <div className="flex items-center justify-between bg-orange-600 text-white text-sm px-4 py-2.5 shrink-0">
-      <span>{message}</span>
+    <div className="flex items-center justify-between bg-orange-600 text-white text-sm px-4 py-2.5 shrink-0 border-l-4 border-orange-400">
+      <div className="flex items-center gap-2">
+        <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <span className="font-medium">{message}</span>
+      </div>
       <button
         onClick={onDismiss}
-        className="ml-4 text-white/70 hover:text-white text-base leading-none"
+        className="ml-4 text-white/70 hover:text-white text-base leading-none shrink-0"
         aria-label="Dismiss"
       >
         ✕
