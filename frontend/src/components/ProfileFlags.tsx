@@ -1,3 +1,4 @@
+import type { ReactElement } from 'react'
 import type { ProfileFlags } from '../types'
 
 function WheelchairIcon() {
@@ -38,7 +39,7 @@ function WalkIcon() {
   )
 }
 
-const FLAG_CONFIG: { key: keyof ProfileFlags; label: string; Icon: () => JSX.Element }[] = [
+const FLAG_CONFIG: { key: keyof ProfileFlags; label: string; Icon: () => ReactElement }[] = [
   { key: 'mobility',   label: 'Mobility',   Icon: WheelchairIcon },
   { key: 'medical',    label: 'Medical',    Icon: MedicalIcon },
   { key: 'pets',       label: 'Pets',       Icon: PawIcon },
