@@ -26,7 +26,7 @@ const SNAPPED_CLOSURE_IDS = new Set<string>([
   'closure_003',
   'closure_004',
 ])
-type Shelter = { name: string; lat: number; lng: number }
+type Shelter = { id?: string; name: string; lat: number; lng: number }
 
 type MapData = {
   spread2hr: FeatureCollection
@@ -211,12 +211,7 @@ function addAllLayers(map: mapboxgl.Map, d: MapData) {
 
   // --- Shelter pins ---
 
-  // Status defaulted to 'Open' until dynamic status is wired in Phase 5.
-  const shelterFeatures = d.shelters.shelters.map((s) => ({
-    type: 'Feature' as const,
-    geometry: { type: 'Point' as const, coordinates: [s.lng, s.lat] },
-    properties: { name: s.name, status: 'Open' },
-  }))
+  const shelterFeatures = buildShelterFeatures(d.shelters.shelters)
 
   map.addSource('shelters', {
     type: 'geojson',
@@ -358,6 +353,26 @@ function decodePolyline(encoded: string): [number, number][] {
   return coords
 }
 
+// Builds GeoJSON features for shelter pins, applying statuses from the given map.
+function buildShelterFeatures(shelters: Shelter[], statuses: Record<string, string> = {}) {
+  return shelters.map((s) => ({
+    type: 'Feature' as const,
+    geometry: { type: 'Point' as const, coordinates: [s.lng, s.lat] },
+    properties: { name: s.name, status: (s.id && statuses[s.id]) ? statuses[s.id] : 'Open' },
+  }))
+}
+
+// Updates the shelters GeoJSON source with new status values.
+function updateShelterStatuses(
+  map: mapboxgl.Map,
+  shelters: Shelter[],
+  statuses: Record<string, string>,
+) {
+  const source = map.getSource('shelters') as mapboxgl.GeoJSONSource | undefined
+  if (!source) return
+  source.setData({ type: 'FeatureCollection', features: buildShelterFeatures(shelters, statuses) })
+}
+
 // Adds or updates the route line source/layer with the given encoded polyline.
 function updateRouteLayer(map: mapboxgl.Map, polyline: string | null) {
   const coords = polyline ? decodePolyline(polyline) : []
@@ -438,35 +453,23 @@ function applyLayerVisibility(map: mapboxgl.Map, vis: LayerVisibility) {
   }
 }
 
-// Updates the user location blue dot data. The source and layers are created
-// by addAllLayers() at the very end of the layer stack so they're always on
-// top of fire perimeter, evac zones, closures, and shelters.
-function updateUserLocation(map: mapboxgl.Map, location: { lat: number; lng: number } | null) {
-  const data: GeoJSON.FeatureCollection = {
-    type: 'FeatureCollection',
-    features: location
-      ? [{ type: 'Feature', geometry: { type: 'Point', coordinates: [location.lng, location.lat] }, properties: {} }]
-      : [],
-  }
-  const existing = map.getSource('user-location') as mapboxgl.GeoJSONSource | undefined
-  if (existing) {
-    existing.setData(data)
-  }
-  // Always push to top in case other layers were added after us
-  if (map.getLayer('user-location-glow')) map.moveLayer('user-location-glow')
-  if (map.getLayer('user-location-dot')) map.moveLayer('user-location-dot')
-}
+// User location is handled via a mapboxgl.Marker (DOM element, not a GL layer).
+// Markers survive setStyle() calls and don't require isStyleLoaded() — no timing issues.
 
 type MapProps = {
   routePolyline?: string | null
   userLocation?: { lat: number; lng: number } | null
+  shelterStatuses?: Record<string, string>
 }
 
-export default function Map({ routePolyline = null, userLocation = null }: MapProps) {
+export default function Map({ routePolyline = null, userLocation = null, shelterStatuses }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
+  const mapDataRef = useRef<MapData | null>(null)
   const routePolylineRef = useRef<string | null>(null)
-  const userLocationRef = useRef<{ lat: number; lng: number } | null>(null)
+  const userMarkerRef = useRef<mapboxgl.Marker | null>(null)
+
+  const shelterStatusesRef = useRef<Record<string, string>>({})
   const [satellite, setSatellite] = useState(false)
   const [layerVis, setLayerVis] = useState<LayerVisibility>({
     spread: true,
@@ -516,11 +519,14 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
           closures: (await clos.json()) as MapData['closures'],
           shelters: (await shel.json()) as MapData['shelters'],
         }
+        mapDataRef.current = mapData
         addAllLayers(map, mapData)
         cancelPulse = startFirePulse(map)
         // Apply any prop data that arrived before the map finished loading
         if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
-        if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
+        if (Object.keys(shelterStatusesRef.current).length > 0) {
+          updateShelterStatuses(map, mapData.shelters.shelters, shelterStatusesRef.current)
+        }
       })()
     })
 
@@ -532,11 +538,15 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
       cancelPulse = startFirePulse(map)
       applyLayerVisibility(map, layerVisRef.current)
       if (routePolylineRef.current) updateRouteLayer(map, routePolylineRef.current)
-      if (userLocationRef.current) updateUserLocation(map, userLocationRef.current)
+      if (Object.keys(shelterStatusesRef.current).length > 0) {
+        updateShelterStatuses(map, mapData.shelters.shelters, shelterStatusesRef.current)
+      }
     })
 
     return () => {
       cancelPulse?.()
+      userMarkerRef.current?.remove()
+      userMarkerRef.current = null
       map.remove()
       mapRef.current = null
     }
@@ -550,16 +560,37 @@ export default function Map({ routePolyline = null, userLocation = null }: MapPr
     updateRouteLayer(map, routePolyline)
   }, [routePolyline])
 
-  // Update the user location dot and fly to it whenever the location prop changes
+  // Update the user location marker whenever the location prop changes.
+  // Using a Marker (DOM element) instead of a GL layer — no style/timing dependency.
   useEffect(() => {
-    userLocationRef.current = userLocation
     const map = mapRef.current
-    if (!map || !map.isStyleLoaded()) return
-    updateUserLocation(map, userLocation)
+    if (!map) return
+
     if (userLocation) {
+      if (userMarkerRef.current) {
+        userMarkerRef.current.setLngLat([userLocation.lng, userLocation.lat])
+      } else {
+        const el = document.createElement('div')
+        el.style.cssText = 'width:18px;height:18px;border-radius:50%;background:#3B82F6;border:3px solid #fff;box-shadow:0 0 0 4px rgba(59,130,246,0.3);'
+        userMarkerRef.current = new mapboxgl.Marker({ element: el })
+          .setLngLat([userLocation.lng, userLocation.lat])
+          .addTo(map)
+      }
       map.flyTo({ center: [userLocation.lng, userLocation.lat], zoom: 13, duration: 1500 })
+    } else {
+      userMarkerRef.current?.remove()
+      userMarkerRef.current = null
     }
   }, [userLocation])
+
+  // Update shelter pin colors when admin statuses change
+  useEffect(() => {
+    shelterStatusesRef.current = shelterStatuses ?? {}
+    const map = mapRef.current
+    const data = mapDataRef.current
+    if (!map || !map.isStyleLoaded() || !data) return
+    updateShelterStatuses(map, data.shelters.shelters, shelterStatuses ?? {})
+  }, [shelterStatuses])
 
   // Apply layer visibility changes to the map
   useEffect(() => {

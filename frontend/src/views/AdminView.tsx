@@ -45,6 +45,9 @@ export default function AdminView() {
 
   const isDemo = config?.demoMode ?? true
 
+  const shelterStatusMap: Record<string, string> = {}
+  data?.shelters.forEach(s => { shelterStatusMap[s.id] = s.status })
+
   return (
     <div className="w-full h-screen bg-gray-950 flex flex-col">
       {/* Admin header */}
@@ -71,7 +74,7 @@ export default function AdminView() {
       <div className="flex flex-1 overflow-hidden">
         {/* Map */}
         <div className="flex-[3] overflow-hidden">
-          <Map />
+          <Map shelterStatuses={shelterStatusMap} />
         </div>
 
         {/* Right panels */}
