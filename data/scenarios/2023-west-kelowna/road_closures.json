@@ -10,7 +10,7 @@
       "CBC BC reporting",
       "Vancouver Is Awesome Aug 18 report"
     ],
-    "notes": "Road closures reconstructed from news reports. Exact timestamps are approximate — based on the nearest update timestamp from emergency operations or news coverage. Coordinates are approximate midpoints of affected segments."
+    "notes": "Road closures reconstructed from news reports. Exact timestamps are approximate \u2014 based on the nearest update timestamp from emergency operations or news coverage. Waypoints trace approximate road geometry derived from OpenStreetMap."
   },
   "road_closures": [
     {
@@ -21,13 +21,56 @@
       "direction": "BOTH",
       "status": "CLOSED",
       "severity": "MAJOR",
-      "cause": "Wildfire — McDougall Creek fire burning across road corridor",
-      "coordinates_from": { "lat": 49.930, "lng": -119.510 },
-      "coordinates_to": { "lat": 50.120, "lng": -119.475 },
-      "midpoint": { "lat": 50.025, "lng": -119.493 },
+      "cause": "Wildfire \u2014 McDougall Creek fire burning across road corridor",
+      "waypoints": [
+        { "lat": 49.92924, "lng": -119.51136 },
+        { "lat": 49.93580, "lng": -119.51013 },
+        { "lat": 49.94307, "lng": -119.50256 },
+        { "lat": 49.94701, "lng": -119.50080 },
+        { "lat": 49.95127, "lng": -119.49525 },
+        { "lat": 49.95243, "lng": -119.49449 },
+        { "lat": 49.96002, "lng": -119.49539 },
+        { "lat": 49.97010, "lng": -119.49633 },
+        { "lat": 49.97417, "lng": -119.49695 },
+        { "lat": 49.97842, "lng": -119.49887 },
+        { "lat": 49.98286, "lng": -119.49740 },
+        { "lat": 49.98781, "lng": -119.49526 },
+        { "lat": 49.99041, "lng": -119.49643 },
+        { "lat": 50.00000, "lng": -119.49560 },
+        { "lat": 50.00864, "lng": -119.49391 },
+        { "lat": 50.01563, "lng": -119.49421 },
+        { "lat": 50.02567, "lng": -119.49518 },
+        { "lat": 50.03228, "lng": -119.49899 },
+        { "lat": 50.03645, "lng": -119.50035 },
+        { "lat": 50.03938, "lng": -119.50243 },
+        { "lat": 50.04249, "lng": -119.50111 },
+        { "lat": 50.04748, "lng": -119.49995 },
+        { "lat": 50.05242, "lng": -119.49944 },
+        { "lat": 50.05544, "lng": -119.49921 },
+        { "lat": 50.06030, "lng": -119.49805 },
+        { "lat": 50.07346, "lng": -119.50213 },
+        { "lat": 50.08643, "lng": -119.50000 },
+        { "lat": 50.09953, "lng": -119.50717 },
+        { "lat": 50.10930, "lng": -119.50724 },
+        { "lat": 50.11691, "lng": -119.50833 },
+        { "lat": 50.12058, "lng": -119.51292 },
+        { "lat": 50.12494, "lng": -119.51094 }
+      ],
+      "coordinates_from": {
+        "lat": 49.93,
+        "lng": -119.51
+      },
+      "coordinates_to": {
+        "lat": 50.12,
+        "lng": -119.475
+      },
+      "midpoint": {
+        "lat": 50.025,
+        "lng": -119.493
+      },
       "closed_at": "2023-08-17T19:00:00-07:00",
       "reopened_at": null,
-      "demo_notes": "Critical closure — cuts off the main northbound evacuation route along the west side of Okanagan Lake. Forces evacuees north of Traders Cove to reroute via Vernon. This is the closure that triggers the re-route demo moment."
+      "demo_notes": "Critical closure \u2014 cuts off the main northbound evacuation route along the west side of Okanagan Lake. Forces evacuees north of Traders Cove to reroute via Vernon. This is the closure that triggers the re-route demo moment."
     },
     {
       "id": "closure_002",
@@ -37,13 +80,112 @@
       "direction": "BOTH",
       "status": "ADVISORY",
       "severity": "MODERATE",
-      "cause": "Wildfire proximity — prepare for short-notice closure due to McDougall Creek fire",
-      "coordinates_from": { "lat": 49.852, "lng": -119.617 },
-      "coordinates_to": { "lat": 49.886, "lng": -119.505 },
-      "midpoint": { "lat": 49.869, "lng": -119.561 },
+      "cause": "Wildfire proximity \u2014 prepare for short-notice closure due to McDougall Creek fire",
+      "waypoints": [
+        {
+          "lat": 49.85196,
+          "lng": -119.61725
+        },
+        {
+          "lat": 49.85545,
+          "lng": -119.61804
+        },
+        {
+          "lat": 49.85894,
+          "lng": -119.61564
+        },
+        {
+          "lat": 49.86222,
+          "lng": -119.61303
+        },
+        {
+          "lat": 49.86355,
+          "lng": -119.60948
+        },
+        {
+          "lat": 49.86648,
+          "lng": -119.60214
+        },
+        {
+          "lat": 49.86857,
+          "lng": -119.5953
+        },
+        {
+          "lat": 49.86682,
+          "lng": -119.59042
+        },
+        {
+          "lat": 49.86465,
+          "lng": -119.58804
+        },
+        {
+          "lat": 49.86199,
+          "lng": -119.58738
+        },
+        {
+          "lat": 49.86262,
+          "lng": -119.5816
+        },
+        {
+          "lat": 49.86388,
+          "lng": -119.56379
+        },
+        {
+          "lat": 49.87313,
+          "lng": -119.54627
+        },
+        {
+          "lat": 49.87707,
+          "lng": -119.53927
+        },
+        {
+          "lat": 49.8835,
+          "lng": -119.5333
+        },
+        {
+          "lat": 49.88431,
+          "lng": -119.5268
+        },
+        {
+          "lat": 49.87999,
+          "lng": -119.52419
+        },
+        {
+          "lat": 49.8779,
+          "lng": -119.52226
+        },
+        {
+          "lat": 49.88129,
+          "lng": -119.50203
+        },
+        {
+          "lat": 49.88348,
+          "lng": -119.50001
+        },
+        {
+          "lat": 49.88418,
+          "lng": -119.50192
+        },
+        {
+          "lat": 49.88479,
+          "lng": -119.50227
+        }
+      ],
+      "coordinates_from": {
+        "lat": 49.852,
+        "lng": -119.617
+      },
+      "coordinates_to": {
+        "lat": 49.886,
+        "lng": -119.505
+      },
+      "midpoint": {
+        "lat": 49.869,
+        "lng": -119.561
+      },
       "closed_at": "2023-08-17T20:00:00-07:00",
       "reopened_at": null,
-      "demo_notes": "Travel advisory — highway remained open but drivers warned of potential sudden closure. This is the route EMBER would recommend for southbound evacuees heading to Royal LePage Place. Important for showing that the system accounts for advisory-level events, not just full closures."
+      "demo_notes": "Travel advisory \u2014 highway remained open but drivers warned of potential sudden closure. This is the route EMBER would recommend for southbound evacuees heading to Royal LePage Place. Important for showing that the system accounts for advisory-level events, not just full closures."
     },
     {
       "id": "closure_003",
@@ -53,13 +195,128 @@
       "direction": "BOTH",
       "status": "CLOSED",
       "severity": "MAJOR",
-      "cause": "Evacuation zone — all access blocked by fire activity",
-      "coordinates_from": { "lat": 49.870, "lng": -119.580 },
-      "coordinates_to": { "lat": 49.885, "lng": -119.570 },
-      "midpoint": { "lat": 49.878, "lng": -119.575 },
+      "cause": "Evacuation zone \u2014 all access blocked by fire activity",
+      "waypoints": [
+        {
+          "lat": 49.87,
+          "lng": -119.58028
+        },
+        {
+          "lat": 49.86634,
+          "lng": -119.571
+        },
+        {
+          "lat": 49.86641,
+          "lng": -119.56917
+        },
+        {
+          "lat": 49.86636,
+          "lng": -119.56785
+        },
+        {
+          "lat": 49.86685,
+          "lng": -119.56811
+        },
+        {
+          "lat": 49.86794,
+          "lng": -119.56928
+        },
+        {
+          "lat": 49.86891,
+          "lng": -119.57114
+        },
+        {
+          "lat": 49.86953,
+          "lng": -119.57162
+        },
+        {
+          "lat": 49.87002,
+          "lng": -119.57137
+        },
+        {
+          "lat": 49.87053,
+          "lng": -119.57185
+        },
+        {
+          "lat": 49.87112,
+          "lng": -119.57195
+        },
+        {
+          "lat": 49.8721,
+          "lng": -119.57192
+        },
+        {
+          "lat": 49.87363,
+          "lng": -119.57179
+        },
+        {
+          "lat": 49.87512,
+          "lng": -119.57072
+        },
+        {
+          "lat": 49.87565,
+          "lng": -119.57075
+        },
+        {
+          "lat": 49.8763,
+          "lng": -119.57171
+        },
+        {
+          "lat": 49.87728,
+          "lng": -119.57203
+        },
+        {
+          "lat": 49.8776,
+          "lng": -119.57375
+        },
+        {
+          "lat": 49.87842,
+          "lng": -119.57248
+        },
+        {
+          "lat": 49.87932,
+          "lng": -119.5696
+        },
+        {
+          "lat": 49.87925,
+          "lng": -119.5681
+        },
+        {
+          "lat": 49.87965,
+          "lng": -119.56829
+        },
+        {
+          "lat": 49.87986,
+          "lng": -119.56905
+        },
+        {
+          "lat": 49.88014,
+          "lng": -119.569
+        },
+        {
+          "lat": 49.88042,
+          "lng": -119.56839
+        },
+        {
+          "lat": 49.88068,
+          "lng": -119.5678
+        }
+      ],
+      "coordinates_from": {
+        "lat": 49.87,
+        "lng": -119.58
+      },
+      "coordinates_to": {
+        "lat": 49.885,
+        "lng": -119.57
+      },
+      "midpoint": {
+        "lat": 49.878,
+        "lng": -119.575
+      },
       "closed_at": "2023-08-17T21:00:00-07:00",
       "reopened_at": null,
-      "demo_notes": "Residential area closures. Rose Valley and West Kelowna Estates were under evacuation order — roads closed to incoming traffic. Not a highway but relevant for showing that the system understands you cannot route INTO an evacuation zone."
+      "demo_notes": "Residential area closures. Rose Valley and West Kelowna Estates were under evacuation order \u2014 roads closed to incoming traffic. Not a highway but relevant for showing that the system understands you cannot route INTO an evacuation zone."
     },
     {
       "id": "closure_004",
@@ -69,40 +326,166 @@
       "direction": "BOTH",
       "status": "CLOSED",
       "severity": "MAJOR",
-      "cause": "Evacuation order zone — fire approaching from north",
-      "coordinates_from": { "lat": 49.935, "lng": -119.515 },
-      "coordinates_to": { "lat": 49.945, "lng": -119.520 },
-      "midpoint": { "lat": 49.940, "lng": -119.518 },
+      "cause": "Evacuation order zone \u2014 fire approaching from north",
+      "waypoints": [
+        {
+          "lat": 49.93591,
+          "lng": -119.51603
+        },
+        {
+          "lat": 49.93506,
+          "lng": -119.51906
+        },
+        {
+          "lat": 49.93474,
+          "lng": -119.52195
+        },
+        {
+          "lat": 49.93498,
+          "lng": -119.525
+        },
+        {
+          "lat": 49.93617,
+          "lng": -119.52774
+        },
+        {
+          "lat": 49.93644,
+          "lng": -119.52754
+        },
+        {
+          "lat": 49.93607,
+          "lng": -119.52687
+        },
+        {
+          "lat": 49.93707,
+          "lng": -119.52584
+        },
+        {
+          "lat": 49.93814,
+          "lng": -119.52642
+        },
+        {
+          "lat": 49.93878,
+          "lng": -119.5265
+        },
+        {
+          "lat": 49.93906,
+          "lng": -119.52522
+        },
+        {
+          "lat": 49.93998,
+          "lng": -119.52383
+        },
+        {
+          "lat": 49.94041,
+          "lng": -119.5245
+        },
+        {
+          "lat": 49.94112,
+          "lng": -119.52588
+        },
+        {
+          "lat": 49.94216,
+          "lng": -119.52611
+        },
+        {
+          "lat": 49.94277,
+          "lng": -119.52686
+        },
+        {
+          "lat": 49.94355,
+          "lng": -119.52777
+        },
+        {
+          "lat": 49.9446,
+          "lng": -119.52835
+        },
+        {
+          "lat": 49.94515,
+          "lng": -119.52871
+        },
+        {
+          "lat": 49.94462,
+          "lng": -119.52702
+        },
+        {
+          "lat": 49.94464,
+          "lng": -119.52515
+        },
+        {
+          "lat": 49.94459,
+          "lng": -119.52362
+        },
+        {
+          "lat": 49.94508,
+          "lng": -119.5223
+        },
+        {
+          "lat": 49.94538,
+          "lng": -119.522
+        }
+      ],
+      "coordinates_from": {
+        "lat": 49.935,
+        "lng": -119.515
+      },
+      "coordinates_to": {
+        "lat": 49.945,
+        "lng": -119.52
+      },
+      "midpoint": {
+        "lat": 49.94,
+        "lng": -119.518
+      },
       "closed_at": "2023-08-17T13:25:00-07:00",
       "reopened_at": null,
-      "demo_notes": "One of the first closures — the initial 68-property evacuation order included all properties off Bear Creek Road north of Parkinson Road. This is the earliest closure in the timeline and could be used as the starting state of the demo."
+      "demo_notes": "One of the first closures \u2014 the initial 68-property evacuation order included all properties off Bear Creek Road north of Parkinson Road. This is the earliest closure in the timeline and could be used as the starting state of the demo."
     }
   ],
   "demo_timeline": [
     {
       "time": "2023-08-17T13:25:00-07:00",
       "event": "Evacuation order issued for 68 properties off Bear Creek Road. Bear Creek Road closed.",
-      "closures_active": ["closure_004"]
+      "closures_active": [
+        "closure_004"
+      ]
     },
     {
       "time": "2023-08-17T19:00:00-07:00",
       "event": "Westside Road closed in both directions as fire moves toward Raymer Bay and Bear Creek areas. Wind gusts intensify.",
-      "closures_active": ["closure_004", "closure_001"]
+      "closures_active": [
+        "closure_004",
+        "closure_001"
+      ]
     },
     {
       "time": "2023-08-17T20:00:00-07:00",
       "event": "DriveBC issues travel advisory for Hwy 97 between Glenrosa Road and Bennett Bridge. 1,100 hectare fire estimate.",
-      "closures_active": ["closure_004", "closure_001", "closure_002"]
+      "closures_active": [
+        "closure_004",
+        "closure_001",
+        "closure_002"
+      ]
     },
     {
       "time": "2023-08-17T21:00:00-07:00",
       "event": "Rose Valley and West Kelowna Estates under evacuation order. All access roads closed. 763 additional properties ordered to evacuate.",
-      "closures_active": ["closure_004", "closure_001", "closure_002", "closure_003"]
+      "closures_active": [
+        "closure_004",
+        "closure_001",
+        "closure_002",
+        "closure_003"
+      ]
     },
     {
       "time": "2023-08-17T21:55:00-07:00",
-      "event": "Fire jumps Okanagan Lake — new wildfires erupt on Kelowna side (Clifton/McKinley area). State of emergency declared by City of Kelowna.",
-      "closures_active": ["closure_004", "closure_001", "closure_002", "closure_003"]
+      "event": "Fire jumps Okanagan Lake \u2014 new wildfires erupt on Kelowna side (Clifton/McKinley area). State of emergency declared by City of Kelowna.",
+      "closures_active": [
+        "closure_004",
+        "closure_001",
+        "closure_002",
+        "closure_003"
+      ]
     }
   ]
 }

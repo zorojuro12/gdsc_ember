@@ -1,9 +1,12 @@
-import Map from './components/Map'
+import { Routes, Route } from 'react-router-dom'
+import ResidentView from './views/ResidentView'
+import AdminView from './views/AdminView'
 
 export default function App() {
   return (
-    <div className="w-full min-h-screen bg-gray-950">
-      <Map />
-    </div>
+    <Routes>
+      <Route path="/" element={<ResidentView />} />
+      <Route path="/admin" element={<AdminView />} />
+    </Routes>
   )
 }
